@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2A2859">
+  <meta name="description" content="Finn aktiviteter, møteplasser og støtte for ungdom i Østensjø.">
+  <title>UngØstensjø — Ditt sted i bydelen</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #2C2C2C;
+      --muted: #575757;
+      --green: #034B45;
+      --green-deep: #034B45;
+      --lime: #C7F6C9;
+      --paper: #fff;
+      --canvas: #F8F0DD;
+      --line: #D0BFAE;
+      --oslo-blue: #2A2859;
+      --oslo-cyan: #6FE9FF;
+      --oslo-red: #FF8274;
+      --oslo-green: #43F8B6;
+      --oslo-yellow: #F9C66B;
+      --shadow: 0 24px 64px #2C2C2C22, 0 2px 10px #2C2C2C12;
+      font-family: Arial, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; color: var(--ink); background: var(--canvas); }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .stage { min-height: 100vh; display: grid; place-items: center; padding: 42px 20px; position: relative; overflow: hidden; background: var(--canvas); }
+    .stage::before, .stage::after { content: ''; position: absolute; pointer-events: none; }
+    .stage::before { width: 160px; height: 160px; left: -36px; top: 12%; border-radius: 50%; background: var(--oslo-cyan); }
+    .stage::after { width: 125px; height: 125px; right: -32px; bottom: 12%; background: var(--oslo-red); clip-path: polygon(0 0, 100% 0, 100% 100%); }
+    .desktop-note { position: absolute; left: max(40px, calc(50% - 460px)); top: 50%; transform: translateY(-50%); width: 250px; z-index: 1; }
+    .desktop-note .eyebrow { display: flex; align-items: center; gap: 9px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .desktop-note .eyebrow::before { content: ''; width: 24px; height: 1px; background: #78936f; }
+    .desktop-note h1 { margin: 22px 0 12px; font: 800 37px/1.14 Manrope, sans-serif; letter-spacing: -.055em; }
+    .desktop-note p { margin: 0; max-width: 225px; color: #66736a; font-size: 14px; line-height: 1.7; }
+    .desktop-note .note-bottom { margin-top: 28px; display: flex; align-items: center; gap: 9px; color: #768078; font-size: 11px; }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #75a767; box-shadow: 0 0 0 4px #75a76720; }
+    .device { position: relative; z-index: 2; width: 402px; height: min(850px, calc(100dvh - 56px)); min-height: 650px; border: 9px solid #202820; border-radius: 48px; background: var(--paper); overflow: hidden; box-shadow: var(--shadow); }
+    .device::before { content: ''; position: absolute; z-index: 10; top: 8px; left: 50%; width: 94px; height: 25px; border-radius: 20px; transform: translateX(-50%); background: #202820; }
+    .screen { height: 100%; display: flex; flex-direction: column; background: var(--paper); overflow: hidden; }
+    .statusbar { height: 39px; flex: 0 0 39px; display: flex; justify-content: space-between; align-items: center; padding: 1px 23px 0; font-size: 11px; font-weight: 700; letter-spacing: -.02em; }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { width: 14px; height: 14px; }
+    .app-scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-bottom: 16px; }
+    .app-scroll::-webkit-scrollbar { display: none; }
+    .app-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 23px 20px; }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: var(--lime); }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .brand-name { font: 800 15px Manrope, sans-serif; letter-spacing: -.04em; }
+    .brand-sub { margin-top: 1px; color: #859087; font-size: 10px; }
+    .header-icon { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fff; display: grid; place-items: center; cursor: pointer; }
+    .header-icon svg { width: 17px; height: 17px; }
+    .welcome { margin: 0 20px; padding: 19px 18px 18px; border-radius: 21px; background: var(--green); color: #fff; position: relative; overflow: hidden; }
+    .welcome::after { content: ''; position: absolute; right: -43px; top: -62px; width: 168px; height: 168px; border: 1px solid #ffffff25; border-radius: 50%; box-shadow: 0 0 0 20px #ffffff0a, 0 0 0 42px #ffffff08; }
+    .welcome-label { color: #d7e6d6; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    .welcome h2 { max-width: 250px; margin: 10px 0 7px; font: 700 24px/1.2 Manrope, sans-serif; letter-spacing: -.05em; }
+    .welcome p { max-width: 245px; margin: 0; color: #dbe4db; font-size: 11px; line-height: 1.55; }
+    .welcome-link { margin-top: 15px; padding: 9px 12px; border: 0; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; color: var(--ink); background: var(--lime); font-size: 10px; font-weight: 700; cursor: pointer; }
+    .welcome-link svg { width: 13px; height: 13px; }
+    .search-wrap { padding: 18px 20px 0; }
+    .search-box { min-height: 45px; display: flex; align-items: center; gap: 10px; padding: 0 13px; border: 1px solid #eaebe6; border-radius: 13px; background: #fbfbf8; }
+    .search-box svg { width: 17px; height: 17px; color: #879089; flex: none; }
+    .search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 11px; }
+    .search-box input::placeholder { color: #969f98; }
+    .search-shortcut { color: #a2aaa3; font-size: 10px; white-space: nowrap; }
+    .section-heading { display: flex; justify-content: space-between; align-items: baseline; padding: 22px 21px 11px; }
+    .section-heading h3 { margin: 0; font: 700 14px Manrope, sans-serif; letter-spacing: -.03em; }
+    .section-heading button { padding: 0; border: 0; background: transparent; color: var(--green); font-size: 10px; font-weight: 700; cursor: pointer; }
+    .category-row { display: flex; gap: 8px; padding: 0 20px 2px; overflow-x: auto; scrollbar-width: none; }
+    .category-row::-webkit-scrollbar { display: none; }
+    .category-chip { flex: none; padding: 8px 11px; border: 1px solid #e7e9e2; border-radius: 20px; background: #fff; color: #69766d; font-size: 10px; font-weight: 600; cursor: pointer; transition: .18s ease; }
+    .category-chip.active { border-color: var(--green); background: var(--green); color: #fff; }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; padding: 0 20px; }
+    .quick-card { min-height: 83px; display: flex; align-items: center; gap: 10px; padding: 11px; border: 1px solid #ecede8; border-radius: 15px; background: #fff; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
+    .quick-card:hover { transform: translateY(-2px); border-color: #cdd6c9; }
+    .quick-icon { width: 35px; height: 35px; flex: none; display: grid; place-items: center; border-radius: 12px; background: #f0f4e8; color: var(--green); }
+    .quick-icon svg { width: 18px; height: 18px; }
+    .quick-card strong { display: block; font-size: 10px; line-height: 1.35; }
+    .quick-card small { display: block; margin-top: 4px; color: #89928b; font-size: 9px; }
+    .offer-list { display: grid; gap: 9px; padding: 0 20px; }
+    .offer-card { display: flex; align-items: flex-start; gap: 11px; padding: 13px 12px; border: 1px solid #ebede7; border-radius: 15px; background: #fff; }
+    .offer-icon { width: 37px; height: 37px; flex: none; display: grid; place-items: center; border-radius: 12px; color: var(--green); background: #f0f4e8; }
+    .offer-icon svg { width: 18px; height: 18px; }
+    .offer-copy { min-width: 0; flex: 1; }
+    .offer-copy h4 { margin: 1px 0 4px; font: 700 11px/1.35 Manrope, sans-serif; letter-spacing: -.01em; }
+    .offer-copy p { margin: 0; color: #778179; font-size: 10px; line-height: 1.5; }
+    .offer-category { display: inline-block; margin-top: 7px; color: #68816b; font-size: 9px; font-weight: 700; }
+    .save-button { width: 28px; height: 28px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: transparent; color: #a3aaa4; cursor: pointer; }
+    .save-button:hover, .save-button.saved { background: #f2f5ed; color: #527c50; }
+    .save-button svg { width: 16px; height: 16px; }
+    .empty-state { padding: 34px 16px; color: #78827a; text-align: center; font-size: 12px; }
+    .bottom-nav { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); padding: 9px 10px max(9px, env(safe-area-inset-bottom)); border-top: 1px solid #edeee9; background: #fffefa; }
+    .nav-button { display: grid; justify-items: center; gap: 4px; padding: 3px; border: 0; background: transparent; color: #8b958d; font-size: 9px; font-weight: 600; cursor: pointer; }
+    .nav-button svg { width: 19px; height: 19px; }
+    .nav-button.active { color: var(--green); }
+    .nav-button.active svg { stroke-width: 2.4; }
+    .toast { position: absolute; z-index: 8; left: 50%; bottom: 78px; transform: translate(-50%, 12px); opacity: 0; padding: 10px 14px; border-radius: 12px; background: #203d2d; color: white; font-size: 11px; pointer-events: none; transition: .2s ease; white-space: nowrap; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .device-home { display: none; }
+    .detail-view, .subpage-view { padding: 0 20px 24px; }
+    .detail-back { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 16px; padding: 7px 0; border: 0; background: transparent; color: var(--green); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .detail-back svg { width: 16px; height: 16px; transform: rotate(180deg); }
+    .detail-hero { padding: 18px; border-radius: 20px; background: #f0f4e8; }
+    .detail-hero .offer-icon { width: 43px; height: 43px; margin-bottom: 13px; background: #fff; }
+    .detail-hero h2 { margin: 0 0 7px; font: 800 21px/1.2 Manrope, sans-serif; letter-spacing: -.045em; }
+    .detail-hero p { margin: 0; color: #657268; font-size: 11px; line-height: 1.65; }
+    .detail-tag { display: inline-block; margin-bottom: 9px; color: #557355; font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .detail-copy { padding: 18px 2px 4px; }
+    .detail-copy h3, .action-page h2 { margin: 0 0 8px; font: 700 14px Manrope, sans-serif; letter-spacing: -.025em; }
+    .detail-copy p, .action-page p { margin: 0; color: #707b72; font-size: 11px; line-height: 1.65; }
+    .important-box { margin-top: 14px; padding: 13px; border: 1px solid #e9ece3; border-radius: 13px; background: #fbfcf8; }
+    .important-box strong { display: block; margin-bottom: 5px; font-size: 10px; }
+    .important-box p { font-size: 10px; }
+    .detail-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 18px; }
+    .detail-action { min-height: 52px; display: flex; align-items: center; gap: 9px; padding: 10px; border: 1px solid #e9ebe5; border-radius: 13px; background: #fff; text-align: left; cursor: pointer; }
+    .detail-action:hover { border-color: #cbd6c5; background: #fbfcf8; }
+    .detail-action svg { width: 18px; height: 18px; color: var(--green); flex: none; }
+    .detail-action span { font-size: 10px; font-weight: 700; }
+    .action-page { padding: 18px; border: 1px solid #e9ebe5; border-radius: 16px; background: #fff; }
+    .action-page > svg { width: 25px; height: 25px; margin-bottom: 13px; color: var(--green); }
+    .action-note { margin-top: 15px; padding: 12px; border-radius: 12px; background: #f0f4e8; color: #526251; font-size: 10px; line-height: 1.6; }
+    .offer-card { position: relative; cursor: pointer; transition: transform .16s ease, border-color .16s ease; }
+    .offer-card:hover { transform: translateY(-1px); border-color: #cdd6c9; }
+    .offer-card:focus-visible, .detail-action:focus-visible, .detail-back:focus-visible { outline: 2px solid #66875d; outline-offset: 2px; }
+
+    .desktop-note .eyebrow { color: var(--oslo-blue); letter-spacing: .04em; }
+    .desktop-note .eyebrow::before { width: 8px; height: 8px; background: var(--oslo-red); }
+    .desktop-note h1 { font: 700 37px/1.16 Arial, sans-serif; letter-spacing: -.04em; }
+    .desktop-note p { color: #2C2C2C; }
+    .online-dot { border-radius: 0; background: var(--oslo-green); box-shadow: none; }
+    .device { border: 9px solid var(--oslo-blue); border-radius: 34px; box-shadow: var(--shadow); }
+    .device::before { border-radius: 0 0 10px 10px; background: var(--oslo-blue); }
+    .statusbar { color: var(--oslo-blue); }
+    .app-header { border-top: 5px solid var(--oslo-blue); padding-top: 12px; }
+    .brand-mark { border-radius: 0; background: var(--oslo-blue); color: var(--oslo-cyan); }
+    .brand-name { font: 700 15px Arial, sans-serif; letter-spacing: -.025em; }
+    .brand-sub { color: #575757; font-size: 10px; }
+    .header-icon { border-radius: 0; border-color: var(--oslo-blue); color: var(--oslo-blue); }
+    .welcome { border-radius: 0; background: var(--oslo-blue); color: #fff; }
+    .welcome::after { right: -36px; top: -52px; width: 120px; height: 120px; border: 0; border-radius: 50%; background: var(--oslo-red); box-shadow: -54px 112px 0 -34px var(--oslo-cyan); }
+    .welcome-label { color: var(--oslo-cyan); letter-spacing: .04em; }
+    .welcome h2 { position: relative; z-index: 1; font: 700 24px/1.22 Arial, sans-serif; letter-spacing: -.035em; }
+    .welcome p { position: relative; z-index: 1; color: #fff; }
+    .welcome-link { position: relative; z-index: 1; border-radius: 0; color: var(--oslo-blue); background: var(--oslo-cyan); }
+    .search-box { border-radius: 0; border: 1px solid #D0BFAE; background: #fff; }
+    .search-box input { font-size: 12px; }
+    .search-box input::placeholder { color: #575757; }
+    .section-heading h3 { font: 700 15px Arial, sans-serif; letter-spacing: -.02em; }
+    .section-heading button, .detail-back { color: var(--oslo-blue); }
+    .category-chip { padding: 8px 11px; border-radius: 0; border-color: #D0BFAE; color: #2C2C2C; }
+    .category-chip.active { border-color: var(--oslo-blue); background: var(--oslo-blue); color: #fff; }
+    .quick-card, .offer-card { border-radius: 0; border-color: #D0BFAE; }
+    .quick-card:hover, .offer-card:hover { border-color: var(--oslo-blue); }
+    .quick-icon, .offer-icon { border-radius: 0; background: var(--oslo-cyan); color: var(--oslo-blue); }
+    .quick-card:nth-child(3n + 2) .quick-icon { background: var(--oslo-red); }
+    .quick-card:nth-child(3n) .quick-icon { background: var(--oslo-green); }
+    .quick-card strong, .offer-copy h4 { font: 700 12px/1.4 Arial, sans-serif; letter-spacing: 0; }
+    .quick-card small, .offer-copy p { color: #575757; font-size: 11px; }
+    .offer-category { color: var(--oslo-blue); font-size: 10px; }
+    .save-button { border-radius: 0; color: var(--oslo-blue); }
+    .save-button:hover, .save-button.saved { background: var(--oslo-cyan); color: var(--oslo-blue); }
+    .bottom-nav { border-top: 1px solid #D0BFAE; background: #fff; }
+    .nav-button { color: #575757; font-size: 10px; }
+    .nav-button.active { color: var(--oslo-blue); }
+    .toast { border-radius: 0; background: var(--oslo-blue); color: #fff; }
+    .detail-back { font-size: 12px; }
+    .detail-hero { border-radius: 0; background: var(--oslo-blue); color: #fff; }
+    .detail-hero .offer-icon { background: var(--oslo-cyan); }
+    .detail-hero h2 { font: 700 22px/1.25 Arial, sans-serif; letter-spacing: -.03em; }
+    .detail-hero p { color: #fff; }
+    .detail-tag { color: var(--oslo-cyan); }
+    .detail-copy h3, .action-page h2 { font: 700 16px Arial, sans-serif; letter-spacing: -.02em; }
+    .detail-copy p, .action-page p { color: #2C2C2C; font-size: 12px; }
+    .important-box { border-radius: 0; border-color: var(--oslo-red); background: #fff; }
+    .important-box strong { font-size: 12px; }
+    .important-box p { font-size: 11px; }
+    .detail-action, .action-page { border-radius: 0; border-color: #D0BFAE; }
+    .detail-action:hover { border-color: var(--oslo-blue); background: #F8F0DD; }
+    .detail-action svg, .action-page > svg { color: var(--oslo-blue); }
+    .detail-action span { font-size: 11px; }
+    .action-note { border-radius: 0; background: #F8F0DD; color: #2C2C2C; font-size: 11px; }
+    .offer-facts { display: grid; gap: 10px; margin-top: 16px; }
+    .fact-block { padding: 13px; border-left: 4px solid var(--oslo-cyan); background: #F8F0DD; }
+    .fact-block h3 { margin: 0 0 6px; font: 700 13px Arial, sans-serif; }
+    .fact-block p { margin: 0; color: #2C2C2C; font-size: 11px; line-height: 1.6; }
+    .fact-block a, .action-note a { color: var(--oslo-blue); font-weight: 700; }
+    .verified-label { display: inline-flex; align-items: center; gap: 6px; margin: 13px 0 8px; color: #575757; font-size: 10px; }
+    .verified-label::before { content: ''; width: 7px; height: 7px; background: var(--oslo-green); }
+    .detail-actions { margin-top: 10px; }
+    .detail-action { text-decoration: none; }
+    .detail-action .external-mark { width: 12px; height: 12px; margin-left: auto; color: #575757; }
+    .empty-state { color: #575757; }
+    .offer-card:focus-visible, .detail-action:focus-visible, .detail-back:focus-visible { outline-color: var(--oslo-blue); }
+
+    @media (max-width: 760px) {
+      body { background: var(--paper); }
+      .stage { display: block; min-height: 100dvh; padding: 0; overflow: visible; background: var(--paper); }
+      .stage::before, .stage::after, .desktop-note, .device::before, .device-home { display: none; }
+      .device { width: 100%; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .screen { min-height: 100dvh; }
+      .statusbar { height: max(42px, calc(env(safe-area-inset-top) + 29px)); flex-basis: max(42px, calc(env(safe-area-inset-top) + 29px)); padding-top: max(1px, env(safe-area-inset-top)); }
+    }
+    @media (max-width: 360px) {
+      .app-header { padding-left: 18px; padding-right: 18px; }
+      .welcome { margin-left: 16px; margin-right: 16px; }
+      .search-wrap { padding-left: 16px; padding-right: 16px; }
+      .section-heading { padding-left: 17px; padding-right: 17px; }
+      .category-row { padding-left: 16px; padding-right: 16px; }
+      .quick-grid, .offer-list { padding-left: 16px; padding-right: 16px; }
+      .detail-view, .subpage-view { padding-left: 16px; padding-right: 16px; }
+    }
+    @media (max-height: 700px) and (min-width: 761px) {
+      .device { height: calc(100dvh - 36px); min-height: 600px; }
+      .desktop-note { top: 48%; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <aside class="desktop-note" aria-label="Om UngØstensjø">
+      <div class="eyebrow">Nært. Nyttig. Ditt.</div>
+      <h1>Finn din greie<br>i Østensjø.</h1>
+      <p>Aktiviteter, møteplasser og hjelp — samlet på ett sted, laget for ungdom i bydelen.</p>
+      <div class="note-bottom"><span class="online-dot"></span> En oversikt for hele Østensjø</div>
+    </aside>
+    <section class="device" aria-label="Forhåndsvisning av UngØstensjø">
+      <div class="screen">
+        <div class="statusbar" aria-hidden="true">
+          <span>9:41</span>
+          <span class="status-icons">
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2.5 6.7a10 10 0 0 1 13 0M5 9.4a6.2 6.2 0 0 1 8 0m-5.5 2.7a2.3 2.3 0 0 1 3 0" stroke-linecap="round"/><circle cx="9" cy="14.5" r=".8" fill="currentColor" stroke="none"/></svg>
+            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4.5" width="12" height="9" rx="2"/><path d="M15.5 7v4" stroke-linecap="round"/><path d="M4.5 7h7v4h-7z" fill="currentColor" stroke="none"/></svg>
+          </span>
+        </div>
+        <header class="app-header">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.2 12 5l9 8.2"/><path d="M6.5 11.5v7h11v-7M10 18.5v-4h4v4"/><path d="m15 4 2 1.8"/></svg></div>
+            <div><div class="brand-name">UngØstensjø</div><div class="brand-sub">Ditt sted i bydelen</div></div>
+          </div>
+          <button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button>
+        </header>
+        <div class="app-scroll" id="appScroll">
+          <div id="homeContent">
+          <section class="welcome" id="welcome">
+            <div class="welcome-label">Hei, dette skjer rundt deg</div>
+            <h2>Finn noe du har lyst til.</h2>
+            <p>Klubber, aktiviteter og folk som kan hjelpe. Alt i Østensjø, samlet her.</p>
+            <button class="welcome-link" id="browseButton">Utforsk tilbud <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12M10 4l6 6-6 6"/></svg></button>
+          </section>
+          <div class="search-wrap">
+            <label class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg><input id="searchInput" type="search" placeholder="Søk etter sted, aktivitet eller hjelp" autocomplete="off"><span class="search-shortcut">⌘ K</span></label>
+          </div>
+          <div class="section-heading"><h3>Utforsk kategorier</h3><button id="allCategories">Se alle</button></div>
+          <div class="category-row" id="categoryRow" aria-label="Filtrer etter kategori"></div>
+          <section id="quickSection">
+            <div class="section-heading"><h3>Populært å starte med</h3><button id="allOffers">Se alle</button></div>
+            <div class="quick-grid" id="quickGrid"></div>
+          </section>
+          <section id="listSection" hidden>
+            <div class="section-heading"><h3 id="listTitle">Alle tilbud</h3><button id="clearFilter">Nullstill</button></div>
+            <div class="offer-list" id="offerList"></div>
+          </section>
+          </div>
+          <section id="detailSection" hidden></section>
+          <section id="subpageSection" hidden></section>
+        </div>
+        <nav class="bottom-nav" aria-label="Hovedmeny">
+          <button class="nav-button active" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10.5 8.5-7 8.5 7"/><path d="M5.5 9.5v10h13v-10M9.5 19.5v-6h5v6"/></svg><span>Hjem</span></button>
+          <button class="nav-button" data-view="explore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/><path d="M8.5 10.8h4.6m-2.3-2.3v4.6"/></svg><span>Utforsk</span></button>
+          <button class="nav-button" data-view="saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg><span>Lagret</span></button>
+        </nav>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const categories = [
+      { name: 'Steder å være', icon: 'place' },
+      { name: 'Aktiviteter og hobbyer', icon: 'spark' },
+      { name: 'Arrangementer og ferie', icon: 'calendar' },
+      { name: 'Jobb og utdanning', icon: 'work' },
+      { name: 'Helse og seksualitet', icon: 'health' },
+      { name: 'Psykisk helse og støtte', icon: 'support' },
+      { name: 'Trygghet og rettigheter', icon: 'shield' },
+      { name: 'Lån utstyr', icon: 'borrow' },
+      { name: 'Søk støtte', icon: 'fund' },
+      { name: 'Vær med og bestem', icon: 'voice' }
+    ];
+
+    const iconPaths = {
+      place: '<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+      spark: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/>',
+      calendar: '<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17m-12 4h2m4 0h2m-8 3h2"/>',
+      work: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-13 5h18m-11-1v2h4v-2"/>',
+      health: '<path d="M20.8 8.8c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11a4.7 4.7 0 0 1 8.8-2.2 4.7 4.7 0 0 1 8.8 2.2Z"/><path d="M8.5 11h2l1.2-2.2 1.5 4.4 1.2-2.2h1.6"/>',
+      support: '<path d="M12 21s8-4 8-10V5l-8-3-8 3v6c0 6 8 10 8 10Z"/><path d="M9 12h6m-3-3v6"/>',
+      shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+      borrow: '<path d="M4 7h16l-1.5 13h-13L4 7Z"/><path d="M9 7a3 3 0 0 1 6 0m-6 5h6"/>',
+      fund: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5c-.7-.7-1.8-1.1-3.1-1.1-1.5 0-2.6.8-2.6 2s1 1.8 2.7 2.2c1.8.4 2.7 1 2.7 2.3s-1.2 2.4-3 2.4c-1.4 0-2.7-.5-3.5-1.4M12 5.5v13"/>',
+      voice: '<path d="M21 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-5 3V11.5A7.5 7.5 0 0 1 10.5 4h3A7.5 7.5 0 0 1 21 11.5Z"/><path d="M8 12h8m-8 3h5"/>',
+      book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20M8 7h8m-8 4h6"/>',
+      game: '<rect x="3" y="7" width="18" height="12" rx="4"/><path d="M8 11v4m-2-2h4m6-1h.01M18 14h.01"/>',
+      help: '<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 4.2 1.6c-1.3 1.1-1.9 1.3-1.9 3m0 3h.01"/>',
+      music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+      location: '<path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9.5 20v-6h5v6"/>'
+    };
+    const icon = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name] || iconPaths.spark}</svg>`;
+    const linkifyContact = (contact) => contact.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, email => `<a href="mailto:${email}">${email}</a>`).replace(/(?<![\w@])(?:\+?\d[\d ()-]{6,}\d)(?![\w@])/g, phone => `<a href="tel:${phone.replace(/\D/g, '')}">${phone}</a>`);
+
+    const offers = [
+      { name: 'Oppsalklubben', category: 'Steder å være', detail: 'Fritidsklubb og møteplass for ungdom i Oppsal.', icon: 'place' },
+      { name: 'Bøler fritidsklubb', category: 'Steder å være', detail: 'Klubbtilbud med klatring, turn, DJ-utstyr, bandøving og leksehjelp.', icon: 'place' },
+      { name: 'Klubb1 på Manglerud', category: 'Steder å være', detail: 'Møteplass med gaming, e-sport, musikkstudio, bandøving og temakvelder.', icon: 'place' },
+      { name: 'Skullerud aktivitetshus', category: 'Steder å være', detail: 'Nevnt i den opprinnelige oversikten; aktuelle tilbud og besøksinformasjon må bekreftes.', icon: 'place' },
+      { name: 'Stikkontakten Gamingsenter', category: 'Steder å være', detail: 'Gaming, e-sport og turneringer. Gaming- og musikkutstyr kan brukes på klubben.', icon: 'game' },
+      { name: 'Abildsøklubben', category: 'Steder å være', detail: 'Klubbtilbud for juniorer.', icon: 'place' },
+      { name: 'Deichman Oppsal', category: 'Steder å være', detail: 'Bibliotek med bokklubb, PS5-aktiviteter, arrangementer og verksteder.', icon: 'book' },
+      { name: 'Deichman Bøler', category: 'Steder å være', detail: 'Bibliotek og møteplass med arrangementer og verksteder.', icon: 'book' },
+      { name: 'Gaming og e-sport', category: 'Aktiviteter og hobbyer', detail: 'Spill og e-sport på Stikkontakten, Klubb1 og Oppsalklubben.', icon: 'game' },
+      { name: 'Musikkstudio og bandøving', category: 'Aktiviteter og hobbyer', detail: 'Spill inn musikk og øv med band på Klubb1, Bøler og i Musikkbingen på Skullerud.', icon: 'music' },
+      { name: 'Matlaging og forming', category: 'Aktiviteter og hobbyer', detail: 'Kreative aktiviteter og matlaging på Oppsalklubben.', icon: 'spark' },
+      { name: 'Klatring, turn og DJ', category: 'Aktiviteter og hobbyer', detail: 'Klatring, turn og DJ-utstyr på Bøler fritidsklubb.', icon: 'spark' },
+      { name: 'Warhammer og fotballkafé', category: 'Aktiviteter og hobbyer', detail: 'Warhammer og 18+ fotballkafé på Skullerud aktivitetshus.', icon: 'game' },
+      { name: 'Bokklubb og PS5', category: 'Aktiviteter og hobbyer', detail: 'Deichman Oppsal har spillrom og spillkonsoller. Bokklubb må bekreftes i oppdatert program.', icon: 'book' },
+      { name: 'Svømming og skate', category: 'Aktiviteter og hobbyer', detail: 'Manglerud bad har basseng og svømmefasiliteter. Skate og parkour her er ikke bekreftet som organisert tilbud.', icon: 'spark' },
+      { name: 'Ut på tur', category: 'Aktiviteter og hobbyer', detail: 'Haraløkka idrettspark, Nøklevann, Ulsrudvann og Rundtjern byr på tur- og friluftsmuligheter.', icon: 'place' },
+      { name: 'UKM Østensjø', category: 'Arrangementer og ferie', detail: 'UKM-arrangement for unge i Østensjø.', icon: 'calendar' },
+      { name: 'Østensjø bydelsdager', category: 'Arrangementer og ferie', detail: 'Opplev bydelsdagene og aktivitetene som skjer i nærmiljøet.', icon: 'calendar' },
+      { name: 'LAN og gamingturneringer', category: 'Arrangementer og ferie', detail: 'LAN og gamingturneringer på Stikkontakten.', icon: 'game' },
+      { name: 'Konserter og musikkverksteder', category: 'Arrangementer og ferie', detail: 'Konserter, festival og musikkverksteder på Skullerud. Konserter og temakvelder på Klubb1.', icon: 'music' },
+      { name: 'Bibliotekarrangementer', category: 'Arrangementer og ferie', detail: 'Arrangementer og verksteder på Deichman.', icon: 'book' },
+      { name: 'Ferieaktiviteter og klubbturer', category: 'Arrangementer og ferie', detail: 'Bydelens gratis ferieaktiviteter og klubbenes turer og ferieprogrammer.', icon: 'calendar' },
+      { name: '@WORK Østensjø', category: 'Jobb og utdanning', detail: 'Informasjon om sommerjobber, deltidsjobber og kurs.', icon: 'work' },
+      { name: 'Jobbsøkerhjelp fra Utekontakten', category: 'Jobb og utdanning', detail: 'Få hjelp med å komme i gang med jobbsøking.', icon: 'work' },
+      { name: 'Oppfølgingstjenesten (OT)', category: 'Jobb og utdanning', detail: 'Oppfølging for ungdom som står uten skole eller jobb.', icon: 'work' },
+      { name: 'NAVs ungdomsgaranti', category: 'Jobb og utdanning', detail: 'Informasjon om NAVs ungdomsgaranti.', icon: 'work' },
+      { name: 'Kommunal læreplassveiledning', category: 'Jobb og utdanning', detail: 'Veiledning om kommunale læreplasser.', icon: 'work' },
+      { name: 'Leksehjelp', category: 'Jobb og utdanning', detail: 'Leksehjelp ved Bøler fritidsklubb og Skullerud aktivitetshus.', icon: 'book' },
+      { name: 'Skolehelsetjenesten', category: 'Helse og seksualitet', detail: 'Helsehjelp og veiledning gjennom skolehelsetjenesten.', icon: 'health' },
+      { name: 'Helsestasjon for ungdom', category: 'Helse og seksualitet', detail: 'Gratis HFU for ungdom 12–24 år i Oslo. Østensjø-klinikken ligger ved Bogerud T-bane.', icon: 'health' },
+      { name: 'Helsestasjon for kjønn og seksualitet', category: 'Helse og seksualitet', detail: 'HKS tilbyr hjelp og informasjon om kjønn og seksualitet.', icon: 'health' },
+      { name: 'Fastlege og tannhelse', category: 'Helse og seksualitet', detail: 'Fastlegeordningen og den offentlige tannhelsetjenesten.', icon: 'health' },
+      { name: 'Rask psykisk helsehjelp Østensjø', category: 'Psykisk helse og støtte', detail: 'Et tilbud for psykisk helsehjelp i Østensjø.', icon: 'support' },
+      { name: 'Forebyggende barne- og ungdomsteam', category: 'Psykisk helse og støtte', detail: 'Forebyggende støtte for barn, unge og familier.', icon: 'support' },
+      { name: 'Utekontakten Østensjø', category: 'Psykisk helse og støtte', detail: 'Utekontakten møter ungdom og kan hjelpe videre til relevante tilbud.', icon: 'support' },
+      { name: 'Ung Arena Oslo sentrum', category: 'Psykisk helse og støtte', detail: 'Et tilbud for unge som ønsker noen å snakke med.', icon: 'support' },
+      { name: 'Rusveiledning og hasjavvenning', category: 'Psykisk helse og støtte', detail: 'Kommunal rusveiledning og hasjavvenning.', icon: 'support' },
+      { name: 'BUP Østensjø og Søndre Oslo DPS', category: 'Psykisk helse og støtte', detail: 'Spesialisthelsetjenester innen psykisk helse.', icon: 'health' },
+      { name: 'Østensjø barneverntjeneste', category: 'Trygghet og rettigheter', detail: 'Barneverntjenesten i bydelen.', icon: 'shield' },
+      { name: 'Barnevernsvakten', category: 'Trygghet og rettigheter', detail: 'Akutt hjelp og råd fra barnevernsvakten.', icon: 'shield' },
+      { name: 'Alarmtelefonen for barn og unge', category: 'Trygghet og rettigheter', detail: 'En hjelpelinje for barn og unge som trenger hjelp eller noen å snakke med.', icon: 'help' },
+      { name: 'Overgrepsmottaket i Oslo', category: 'Trygghet og rettigheter', detail: 'Hjelpetilbud ved overgrep.', icon: 'health' },
+      { name: 'Legevakten', category: 'Trygghet og rettigheter', detail: 'Kontakt legevakten ved behov for helsehjelp som ikke kan vente.', icon: 'health' },
+      { name: 'Skole- og lærlingombudet', category: 'Trygghet og rettigheter', detail: 'Barnehage-, skole- og lærlingombudet kan gi råd om rettigheter.', icon: 'help' },
+      { name: 'ung.no', category: 'Trygghet og rettigheter', detail: 'Informasjon og svar på spørsmål om rettigheter og ungdomsliv.', icon: 'help' },
+      { name: 'BUA Østensjø', category: 'Lån utstyr', detail: 'Lån sports- og friluftsutstyr gjennom BUA Østensjø.', icon: 'borrow' },
+      { name: 'Bydelens utstyrsbank', category: 'Lån utstyr', detail: 'Partytelt, bord, stoler og strømaggregat til organisasjoner og offentlige virksomheter.', icon: 'borrow' },
+      { name: 'Utstyr på klubbene', category: 'Lån utstyr', detail: 'Gaming- og musikkutstyr til bruk på klubbene, blant annet hos Stikkontakten, Klubb1, Bøler og Skullerud.', icon: 'game' },
+      { name: 'Tilskudd til ungdomstiltak', category: 'Søk støtte', detail: 'Tilskudd i Bydel Østensjø for ungdom som vil gjennomføre egne aktiviteter og prosjekter.', icon: 'fund' },
+      { name: 'Oslos fritidskort', category: 'Søk støtte', detail: 'Støtte til godkjente fritidsaktiviteter etter ordningens vilkår.', icon: 'fund' },
+      { name: 'Østensjø ungdomsråd', category: 'Vær med og bestem', detail: 'Vær med på å påvirke aktiviteter, arrangementer og utviklingen av tilbud i bydelen.', icon: 'voice' },
+      { name: 'Klubbråd', category: 'Vær med og bestem', detail: 'Klubbråd ved fritidsklubbene gir ungdom mulighet til å påvirke aktiviteter og innkjøp.', icon: 'voice' },
+      { name: 'URÅD ved Deichman Oppsal', category: 'Vær med og bestem', detail: 'Påvirk aktiviteter, arrangementer og tilbud på biblioteket.', icon: 'voice' }
+    ];
+
+    const offerInfo = {
+      'Oppsalklubben': { description: 'Gratis fritidsklubb på Oppsal for barn og ungdom som bor eller går på skole i Bydel Østensjø. Junior er for 4.–7. trinn, ungdomstilbudet for 8. trinn til 18 år. Her finnes blant annet spill, e-sport, matlaging, forming, biljard, bordtennis og kafé.', important: 'Juniorer får informasjon og registrering via Spond-gruppekoden WHYTF. Ungdom registrerer seg ved inngangen. Klubbdagene er tirsdag og torsdag for junior, onsdag og fredag for ungdom; sjekk den offisielle siden for oppdaterte klokkeslett og eventuelle ferieendringer.', address: 'Vetlandsveien 99, 0685 Oslo', hours: 'Junior: tirsdag og torsdag. Ungdom: onsdag og fredag. Klokkeslett og ferieåpning på kommunens side.', links: [{ label: 'Offisiell informasjon og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/oppsalklubben/' }, { label: 'Instagram', url: 'https://www.instagram.com/oppsalklubben/' }] },
+      'Bøler fritidsklubb': { description: 'Gratis klubb for barn og ungdom med tilknytning til Bydel Østensjø. Junior: 4.–8. trinn. Ungdom: 8. trinn til 18 år. Tilbudene omfatter blant annet klatring, DJ, gaming, musikkstudio, bandrom, turnutstyr, hobbyverksted og kafé.', important: 'Klubbdagene er tirsdag og torsdag for junior, onsdag og fredag for ungdom. Medlemskapsskjema/kontrakt fylles ut innen andre besøk. Sjekk kommunens side eller klubbens Instagram for klokkeslett og ferieåpning.', address: 'Bølerlia 3 A, 0691 Oslo', hours: 'Junior: tirsdag og torsdag. Ungdom: onsdag og fredag. Klokkeslett og ferieåpning på kommunens side.', contact: 'Junior: 469 33 977 · odd.reiersolmoen@bos.oslo.kommune.no. Ungdom: 995 37 670 · vilde.marie.nilsen.bjellebo@bos.oslo.kommune.no.', links: [{ label: 'Offisiell informasjon og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/boler-fritidsklubb/' }, { label: 'Instagram ungdom', url: 'https://www.instagram.com/bolerungdomsklubb/' }, { label: 'Instagram junior', url: 'https://www.instagram.com/bolerjuniorklubb/' }] },
+      'Klubb1 på Manglerud': { description: 'Fritidsklubb i Manglerud bad og aktivitetshus, primært for ungdom fra Abildsø, Høyenhall og Manglerud. Junioravdelingen er for 5.–7. trinn og ungdomsavdelingen for 8. trinn til 19 år. Tilbud inkluderer gaming, hobbyverksted, dans, bordtennis, kafé, biljard, turneringer, studio, bandveiledning og 3D-printing.', important: 'Junior har klubbaktiviteter tirsdag og onsdag; ungdomstilbud mandag, torsdag og fredag. Ukedagene er oppgitt, men kontrollér klokkeslett og eventuelle endringer på kommunens side før oppmøte.', address: 'Plogveien 22, 0681 Oslo', hours: 'Junior: tirsdag og onsdag. Ungdom: mandag, torsdag og fredag. Sjekk kommunens side for klokkeslett.', links: [{ label: 'Offisiell informasjon og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/klubb1/' }, { label: 'Instagram', url: 'https://www.instagram.com/klubb1_/' }, { label: 'Facebook', url: 'https://nb-no.facebook.com/Manglerud.Ungdomshus.Offisiell/' }] },
+      'Stikkontakten Gamingsenter': { description: 'Gratis gamingtilbud for ungdom med tilknytning til Bydel Østensjø: fra 8. trinn til 18 år, med eget junioropplegg for 5.–7. trinn. På senteret finnes spill-PC-er og bærbare, VR, simulatorer, streamingrom, PS5, Switch, LAN og turneringer.', important: 'Ungdom registrerer seg i Spond med koden JTONT; junior med NMDSS. Ungdomstilbudet har mandag (jentetilbud), tirsdag og torsdag; junior onsdag. Kontakt Erlend Tønnesen for klokkeslett, adgang og oppdatert program.', address: 'General Ruges vei 102, 0694 Oslo', hours: 'Ungdom: mandag (jentetilbud), tirsdag og torsdag. Junior: onsdag. Bekreft klokkeslett hos klubben.', contact: 'Erlend Tønnesen · 477 88 923 · erlend.tonnesen@bos.oslo.kommune.no', links: [{ label: 'Offisiell informasjon og Spond', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/stikkontakten-gamingsenter/' }] },
+      'Abildsøklubben': { description: 'Gratis, rus- og alkoholfritt klubbtilbud for elever på 5.–7. trinn. Her kan du blant annet danse, spille PS5, brettspill og bordtennis, bruke gaming-PC-er, delta på hobbyaktiviteter og besøke kaféen.', important: 'Klubben har oppgitt tirsdag som åpningsdag. Se kommunens side for oppdatert klokkeslett og kontakt klubben før første besøk.', address: 'Enebakkveien 264, 1187 Oslo', hours: 'Tirsdag. Sjekk kommunens side for oppdatert klokkeslett.', contact: 'Daniela Abbass · 938 91 872', links: [{ label: 'Offisiell informasjon og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/abildsoklubben/' }] },
+      'Deichman Oppsal': { description: 'Bibliotek med spillrom og spillkonsoller, arrangementer og aktiviteter. Biblioteket har bemannet åpningstid for alle og meråpent tilbud for registrerte lånere fra 15 år med Oslonøkkel.', important: 'Oppgitt bemannet åpningstid er 10–16; meråpent 07–22 med Oslonøkkel for deg som er 15 år eller eldre. Sjekk filialens side før du drar for eventuelle avvik og dagens program.', address: 'Vetlandsveien 99–101, 0685 Oslo', hours: 'Bemannet: 10–16. Meråpent med Oslonøkkel fra 15 år: 07–22. Sjekk filialen for dagens avvik.', contact: '23 43 29 00 · oppsal@deichman.no', links: [{ label: 'Deichman Oppsal: åpningstider og arrangementer', url: 'https://deichman.no/bibliotekene/oppsal' }, { label: 'Facebook', url: 'https://www.facebook.com/deichman.oppsal' }, { label: 'Instagram', url: 'https://www.instagram.com/deichmanoppsal/' }] },
+      'Deichman Bøler': { description: 'Lokalt bibliotek på Bøler med arrangementer og aktiviteter. Filialen har bemannet åpningstid for alle og meråpent tilbud for registrerte lånere fra 15 år med Oslonøkkel.', important: 'Oppgitt bemannet åpningstid er 10–16; meråpent 07–22 med Oslonøkkel for deg som er 15 år eller eldre. Sjekk filialens side for dagsaktuelle tider og arrangementer.', address: 'Bølerlia 3C, 0691 Oslo', hours: 'Bemannet: 10–16. Meråpent med Oslonøkkel fra 15 år: 07–22. Sjekk filialen for dagens avvik.', contact: '23 43 29 00 · boler@deichman.no', links: [{ label: 'Deichman Bøler: åpningstider og arrangementer', url: 'https://deichman.no/bibliotekene/bøler' }, { label: 'Facebook', url: 'https://www.facebook.com/deichman.boler' }, { label: 'Instagram', url: 'https://instagram.com/deichmanboler' }] },
+      'Svømming og skate': { description: 'Manglerud bad har et 25-metersbasseng, opplæringsbasseng, familiebasseng, sklie, stupebrett, badstue og kafé. Skate og parkour utenfor badet er ikke bekreftet som et organisert kommunalt tilbud.', important: 'Badet bruker ukesbasert billett- og svømmeplan; sjekk den offisielle badsiden før besøk. Billettsalget stenger før garderobene. Oppgitt sklie- og stupebrettid er hverdager 15–17 og helger/ferier 11–16.', address: 'Plogveien 22, 0681 Oslo', contact: '21 80 21 80 · postmottak@bym.oslo.kommune.no', links: [{ label: 'Manglerud bad: billetter og åpningstider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/svommehaller-i-oslo/manglerud-bad/' }] },
+      'BUA Østensjø': { description: 'Lån sports- og friluftsutstyr gratis fra BUA Østensjø. Sjekk utstyrsoversikten og bestillingsreglene på BUA før du drar, siden tilgjengelighet og låneperiode avhenger av utstyret.', important: 'Betjent utlån mandag og torsdag kl. 16–19. BUA anbefaler å følge Facebook-siden for avvikende åpningstider.', address: 'Enebakkveien 158d, 0680 Oslo', hours: 'Mandag og torsdag kl. 16–19. Sjekk BUA-siden for avvik før besøk.', contact: '458 77 605 · bua@bos.oslo.kommune.no', links: [{ label: 'BUA Østensjø: utstyr og åpningstider', url: 'https://www.bua.no/utlansordninger/bua-ostensjo' }, { label: 'Slik låner du', url: 'https://www.bua.no/hvordan-lane' }] },
+      'Bydelens utstyrsbank': { description: 'Bydelens utstyrsbank låner gratis arrangementsutstyr til lag, organisasjoner og offentlige virksomheter i Bydel Østensjø. Utstyr omfatter partytelt, strømaggregat, klappstoler og -bord, informasjonstavler og mobile sykkelstativer. Ordningen er ikke oppgitt som utlån til privatpersoner.', important: 'Avklar tilgjengelighet og avtale om henting/retur direkte med kontaktpersonen; nettsiden oppgir ikke bestillingsfrist eller reservasjonssystem.', contact: 'Steinar Simonsen · steinar.simonsen@bos.oslo.kommune.no', links: [{ label: 'Offisiell informasjon og kontakt', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsutstyr-til-utlan/utstyrsbank-for-organisasjoner-i-bydel-ostensjo/' }] },
+      'Oslos fritidskort': { description: 'Oslo fritidskort kan brukes til godkjente fritidsaktiviteter for barn og unge fra 6 år til og med året de fyller 19. Beløpet avhenger av alder og foresattes samlede inntekt. Søkeren må være folkeregistrert i Oslo.', important: 'Foresatt søker, eller ungdom over 15 år søker selv, gjennom innlogget søknad. Ordningen har ikke søknadsfrist. Den dekker bestemte aktivitetsavgifter, ikke utstyr; sjekk vilkårene og gjeldende beløp før du søker.', links: [{ label: 'Vilkår og beløp', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidskort-for-barn-og-unge/sok-om-fritidskort/' }, { label: 'Søk fritidskort', url: 'https://fritidskort.oslo.kommune.no/s%C3%B8knad' }] },
+      'Tilskudd til ungdomstiltak': { description: 'Bydel Østensjø viser tilskuddsordninger, legater og stipend på bydelens nettside. Jeg har ikke funnet en bekreftet, aktuell ordning spesielt for ungdomstiltak med publiserte vilkår og frist.', important: 'Kontroller mottaker, søknadsfrist og hvem som kan søke i den konkrete ordningen før dere planlegger aktivitet eller budsjett.', links: [{ label: 'Bydel Østensjø: tilskudd, legater og stipend', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/tilskudd-legater-og-stipend/' }, { label: 'Oslo kommunes tilskuddsoversikt', url: 'https://www.oslo.kommune.no/tilskudd-legater-og-stipend/#f_bydel_ostensjo=true' }] },
+      '@WORK Østensjø': { description: 'Bydelens jobbtilbud er for ungdom 14–19 år som bor i Østensjø, med deltidsjobber, sommerjobber på 2–3 uker og kurs om jobbsøking, privatøkonomi og entreprenørskap. Kurs kan også være åpne for unge opp til 26 år.', important: 'Søk utlyste stillinger i Webcruiter; hvis ingen stilling er publisert, er det ikke en åpen søknad. Kursinformasjon legges ut separat. Kontakt bydelens side for gjeldende utlysninger og frister.', contact: 'Sofie Widdal · 48 12 25 24 · sofie.widdal@bos.oslo.kommune.no', links: [{ label: 'Jobb for ungdom i Bydel Østensjø', url: 'https://www.oslo.kommune.no/jobb-i-oslo-kommune/jobb-til-unge/jobb-til-ungdom-i-bydel-ostensjo/' }] },
+      'Oppfølgingstjenesten (OT)': { description: 'Oslo OT følger opp unge med rett til videregående opplæring som ikke er i opplæring eller arbeid. De kan hjelpe med å finne arbeid, kurs eller skoleplass.', important: 'Tilbudet gjelder til og med året du fyller 24. Bruk kommunens OT-side for kontakt og framgangsmåte; det er ikke oppgitt lokalt kontaktpunkt for Østensjø i denne oversikten.', links: [{ label: 'Oppfølgingstjenesten i Oslo', url: 'https://www.oslo.kommune.no/skole-og-utdanning/videregaende-skole/soke-videregaende-skole/utdannings-og-yrkesveiledning/oppfolgingstjenesten/' }] },
+      'NAVs ungdomsgaranti': { description: 'NAVs ungdomsgaranti er individuell oppfølging for personer 16–30 år som NAV vurderer trenger hjelp for å komme i arbeid eller fullføre utdanning. Du får en fast kontaktperson og tilpasset oppfølging.', important: 'Ta kontakt med NAV og be om arbeidsrettet oppfølging eller registrer deg som arbeidssøker. For personer under 18 år kreves samtykke fra foresatt.', links: [{ label: 'NAV: ungdomsgarantien', url: 'https://www.nav.no/ungdomsgarantien' }] },
+      'Helsestasjon for ungdom': { description: 'Gratis helsestasjon for ungdom 12–24 år som bor i Oslo. Du kan velge hvilken som helst HFU i byen. Tilbud kan omfatte prevensjon, graviditetstest, testing/behandling for kjønnssykdommer og samtaler om helse og livssituasjon.', important: 'Åpningstider og hvordan du møter opp varierer. Sjekk kommunens oversikt før besøk.', links: [{ label: 'Oslo kommune: helsestasjon for ungdom', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsestasjon-for-ungdom-hfu/' }] },
+      'Helsestasjon for kjønn og seksualitet': { description: 'HKS tilbyr samtaler og helsehjelp om blant annet kropp, kjønnsidentitet og seksuell identitet til personer 0–30 år som bor i Oslo. Samtaler er gratis; medisinsk behandling kan ha egenandel. Tjenesten har taushetsplikt.', important: 'Det er ikke drop-in: bestill samtale via Helseboka. Adresse: Dronningens gate 16, 5. etasje. Telefon 45 61 51 12.', address: 'Dronningens gate 16, 5. etasje, 0152 Oslo', contact: '45 61 51 12 · hks@bga.oslo.kommune.no', links: [{ label: 'Bestill samtale', url: 'https://app.helseboka.no/c/s/4527908' }, { label: 'Offisiell informasjon', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsestasjon-for-kjonn-og-seksualitet-hks/' }] },
+      'Østensjø helsestasjon for ungdom': { description: 'Gratis tilbud for ungdom 12–24 år. Alle ungdommer i Oslo kan velge hvilken helsestasjon for ungdom de vil bruke. Tilbudet omfatter prevensjon, graviditetstest, nødprevensjon, SOI-test og samtaler om fysisk, psykisk og seksuell helse.', important: 'Østensjø HFU har drop-in og timebestilling mandager. Selvteststasjon for kjønnssykdommer er oppgitt tilgjengelig daglig. Sjekk kommunens side for detaljer før du drar.', address: 'Stallerudveien 97, 0693 Oslo, ved Bogerud T-banestasjon', hours: 'Drop-in og timebestilling mandager. Selvteststasjon for SOI-test oppgis tilgjengelig daglig. Sjekk gjeldende klokkeslett.', contact: '47 70 12 38', links: [{ label: 'Østensjø helsestasjon for ungdom', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsestasjon-for-ungdom-hfu/ostensjo-helsestasjon-for-ungdom-hfu/' }, { label: 'Andre helsestasjoner for ungdom i Oslo', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsestasjon-for-ungdom-hfu/' }] },
+      'Andre ungdomshelsestasjoner i Oslo': { description: 'Gratis helsestasjon for ungdom 12–24 år som bor i Oslo. Du kan velge hvilken som helst av byens klinikker. Tilbud kan omfatte prevensjon, graviditetstest, testing/behandling for kjønnssykdommer og samtaler.', important: 'Tjenester og åpningstider varierer mellom klinikkene. Bruk kommunens oversikt for å velge klinikk og sjekke hvordan du bestiller eller møter opp.', links: [{ label: 'Oversikt over helsestasjoner for ungdom', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsestasjon-for-ungdom-hfu/' }] },
+      'Rask psykisk helsehjelp Østensjø': { description: 'Gratis kommunalt lavterskeltilbud for personer over 16 år som bor i Østensjø og har lettere angst, depresjon eller søvnproblemer. Henvisning fra fastlege er ikke nødvendig. Tilbudet kan omfatte kartleggingssamtale, kurs i kognitiv terapi, veiledet selvhjelp og individuelle timer.', important: 'Du må bo i bydelen og være over 16 år. Tjenesten har taushetsplikt og journalplikt. Ta kontakt for vurdering og avtale; oppmøte er ikke drop-in.', address: 'Olaf Helsets vei 6, 0694 Oslo', contact: '45 61 05 00', links: [{ label: 'Rask psykisk helsehjelp Østensjø', url: 'https://www.oslo.kommune.no/helse-og-omsorg/psykisk-helsehjelp/kortvarige-og-moderate-psykiske-utfordringer/ved-milde-til-moderate-psykiske-utfordringer/rask-psykisk-helsehjelp-bydel-ostensjo/' }] },
+      'Forebyggende barne- og ungdomsteam': { description: 'Gratis lavterskeltilbud for barn, ungdom og familier. Teamet arbeider forebyggende og oppsøkende og kan tilby blant annet foreldreveiledning, familieterapi og psykologhjelp.', important: 'Du trenger ikke henvisning, men oppmøte skjer etter avtale. Ring først for å finne ut hvem du skal snakke med og avtale tid.', address: 'Olaf Helsets vei 6, 0694 Oslo', contact: '94 00 98 60', links: [{ label: 'Forebyggende barne- og ungdomsteam', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/oslohjelpa/forebyggende-barne-og-ungdomsteam/' }] },
+      'Utekontakten Østensjø': { description: 'Utekontaktene arbeider forebyggende og oppsøkende med ungdom 10–23 år, dag og kveld. De tilbyr råd, støtte og samtaler om blant annet skole, jobb, fritid, familie, rus, mobbing og andre utfordringer. Tjenesten har taushetsplikt.', important: 'Den generelle kommunale oversikten har ikke direkte kontaktinformasjon eller patruljeplan for Østensjø. Kontakt det forebyggende teamet for å komme i kontakt med riktig person.', contact: 'Forebyggende team: 94 00 98 60', links: [{ label: 'Utekontakter i bydelene', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/barnevern-og-foreldreveiledning/utekontakter-i-bydelene/' }, { label: 'Forebyggende team Østensjø', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/oslohjelpa/forebyggende-barne-og-ungdomsteam/' }] },
+      'Ung Arena Oslo sentrum': { description: 'Gratis samtaler og veiledning for barn og unge 12–25 år med psykiske helseplager. Du trenger ikke henvisning. Samtalene er under taushetsplikt, og tjenesten fører journal.', important: 'Drop-in torsdag kl. 14–17. Under 16 år må ha samtykke fra begge foreldre. Ikke send sensitive opplysninger på e-post.', address: 'Hagegata 32, 0653 Oslo', hours: 'Drop-in torsdag kl. 14–17. Kontroller kommunens side for endringer.', contact: '90 41 53 88 · ungarena@bgo.oslo.kommune.no', links: [{ label: 'Ung Arena Oslo sentrum', url: 'https://www.oslo.kommune.no/helse-og-omsorg/psykisk-helsehjelp/psykisk-helsehjelp-til-barn-unge-og-familier/psykisk-helsehjelp-for-ungdom-og-unge-voksne/ung-arena/ung-arena-oslo-sentrum/' }] },
+      'Rusveiledning og hasjavvenning': { description: 'Oslo kommunes hasjavvenningsprogram er gratis og finnes i alle bydeler for ungdom og unge voksne som vil redusere, ta pause fra eller slutte med cannabis. Kommunale ruskonsulenter tilbyr råd, kartlegging, motivasjonssamtaler og hjelp til kontakt med videre behandling.', important: 'Kontakt tjenesten for å finne riktig lokal ruskonsulent. For unge under 18 kan ruskonsulenter også bistå i dialog med foreldre, skole og andre tjenester.', links: [{ label: 'Kommunens hasjavvenningstilbud', url: 'https://www.oslo.kommune.no/helse-og-omsorg/rustjenester/behandling-og-tjenester/hasjavvenning/' }, { label: 'Ruskonsulenter i Oslo', url: 'https://www.oslo.kommune.no/helse-og-omsorg/rustjenester/ruskonsulenter/' }] },
+      'BUP Østensjø og Søndre Oslo DPS': { description: 'BUP tilbyr spesialisthelsetjenester innen psykisk helse for barn og unge; DPS tilbyr tjenester for voksne. Polikliniske tilbud vurderer behov og videre oppfølging.', important: 'Henvisningsvei, opptakskriterier og lokalt kontaktpunkt er ikke bekreftet for de navngitte tjenestene i denne oversikten. Snakk med fastlege eller skolehelsetjenesten om henvisning og riktig tilbud.', links: [{ label: 'Oslo universitetssykehus: psykisk helse og avhengighet', url: 'https://www.oslo-universitetssykehus.no/avdelinger/klinikk-psykisk-helse-og-avhengighet/' }] },
+      'Østensjø barneverntjeneste': { description: 'Barn og ungdom som har det vanskelig hjemme, eller voksne som er bekymret for et barn, kan kontakte barnevernet i bydelen for råd og hjelp.', important: 'Ved akutt bekymring utenom kontortid kontakt Barnevernsvakten. Ved umiddelbar fare ring 112.', links: [{ label: 'Kontakt barnevernet i Oslo', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/barnevern-og-foreldreveiledning/kontakt-barnevernet/' }, { label: 'Barnevernsvakten i Oslo', url: 'https://barnevernvakten.no/kommuner/oslo-kommune' }] },
+      'Barnevernsvakten': { description: 'Barnevernsvakten i Oslo er et akutt tilbud når barn eller unge trenger hjelp utenom barneverntjenestens åpningstid.', important: 'Døgnåpen telefon: 40 42 77 77. Ved umiddelbar fare ring 112.', address: 'Politihuset i Oslo, Grønlandsleiret 44, 0190 Oslo', contact: '40 42 77 77 · barnevernvakten@bfe.oslo.kommune.no', links: [{ label: 'Barnevernsvakten i Oslo', url: 'https://barnevernvakten.no/kommuner/oslo-kommune' }] },
+      'Overgrepsmottaket i Oslo': { description: 'Døgnåpent og gratis tilbud for personer fra 14 år som oppholder seg i Oslo etter seksuelle overgrep. Du trenger ikke henvisning eller å anmelde til politiet. De ansatte har taushetsplikt.', important: 'Ring før oppmøte. For barn under 14 år: Barnemottaket Ullevål, 22 98 91 40. Ved umiddelbar fare ring 112.', address: 'Trondheimsveien 233, Aker sykehus, Oslo', contact: '23 04 05 00', links: [{ label: 'Overgrepsmottaket: kontakt og hjelp', url: 'https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/overgrepsmottaket/' }] },
+      'Skole- og lærlingombudet': { description: 'Barnehage-, skole- og lærlingombudet kan gi råd om rettigheter og bidra når elever eller lærlinger trenger hjelp i møte med skole eller lærebedrift.', important: 'Kontakt ombudet via Oslo kommunes nettside for oppdatert kontaktmåte og åpningstid.', links: [{ label: 'Oslo kommune: skole og utdanning', url: 'https://www.oslo.kommune.no/skole-og-utdanning/' }] },
+      'Østensjø ungdomsråd': { description: 'Ungdomsrådet er et rådgivende organ for bydelsutvalget. Ungdom 12–18 år velges gjennom skoler, fritidsklubber og organisasjoner. Rådet løfter saker som er viktige for unge i bydelen.', important: 'Møtene er åpne for publikum og starter med en åpen halvtime der du kan komme med innspill og spørsmål. Kontakt sekretæren for møtedatoer og informasjon om deltakelse.', contact: 'sofie.widdal@bos.oslo.kommune.no', links: [{ label: 'Østensjø ungdomsråd: møter og kontakt', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/politikk-og-politiske-moter/medvirkningsrad-i-bydel-ostensjo/ostensjo-ungdomsrad/' }] },
+      'Klubbråd': { description: 'Oppsalklubben og Bøler fritidsklubb beskriver klubbråd som en måte for ungdom å påvirke aktiviteter, innkjøp og prosjekter. Rådene er knyttet til den enkelte klubb.', important: 'Spør en ansatt på din klubb om hvordan du kan melde interesse; valg og opplegg kan variere mellom klubbene.', links: [{ label: 'Oppsalklubben', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/oppsalklubben/' }, { label: 'Bøler fritidsklubb', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/boler-fritidsklubb/' }] },
+      'URÅD ved Deichman Oppsal': { description: 'Et lokalt URÅD ved Deichman Oppsal er ikke bekreftet i bibliotekets nåværende offisielle informasjon. Deichman Oppsal er et bibliotek og publiserer oppdaterte aktiviteter og arrangementer på sin filialside.', important: 'Kontakt biblioteket for å få bekreftet om ungdomsrådet møtes, hvem som kan delta og hvordan du melder interesse.', address: 'Vetlandsveien 99–101, 0685 Oslo', contact: '23 43 29 00 · oppsal@deichman.no', links: [{ label: 'Deichman Oppsal: kontakt og aktiviteter', url: 'https://deichman.no/bibliotekene/oppsal' }] },
+      'Skullerud aktivitetshus': { description: 'Skullerud aktivitetshus står i den opprinnelige oversikten, men vi fant ikke en oppdatert offisiell side som bekrefter adressen, åpningstidene, aldersgruppe eller aktivitetene.', important: 'Warhammer, fotballkafé 18+, Musikkbingen, konserter og ferieprogrammer er ikke bekreftet i en aktuell kommunal kilde. Avklar direkte med Bydel Østensjø før du drar.', links: [{ label: 'Kontakt Bydel Østensjø', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/kontakt-og-organisasjon/' }, { label: 'Bydel Østensjø: nyheter og tilbud', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/' }] },
+      'Matlaging og forming': { description: 'Oppsalklubben bekrefter matlagingsgrupper og hobby-/formingsaktiviteter. Klubben er gratis for barn og ungdom som bor eller går på skole i Bydel Østensjø.', important: 'Junior er 4.–7. trinn (Spond-kode WHYTF); ungdom er 8. trinn til 18 år og registrerer seg ved inngangen. Matlagingsgrupper følger klubbprogrammet, så sjekk åpningstidene før du møter opp.', address: 'Vetlandsveien 99, 0685 Oslo', links: [{ label: 'Oppsalklubben: aktiviteter og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/oppsalklubben/' }] },
+      'Klatring, turn og DJ': { description: 'Bøler fritidsklubb oppgir klatring, DJ-booth/diskotek og turnutstyr som del av klubbtilbudet. Klubben har også gamingrom, bandrom, hobbyverksted og kafé.', important: 'Gratis medlemskap for barn og unge som bor eller går på skole i Bydel Østensjø. Junior- og ungdomskvelder har separate åpningstider; se kommunens oppdaterte ukeplan.', address: 'Bølerlia 3 A, 0691 Oslo', contact: 'Junior: 469 33 977 · odd.reiersolmoen@bos.oslo.kommune.no. Ungdom: 995 37 670 · vilde.marie.nilsen.bjellebo@bos.oslo.kommune.no.', links: [{ label: 'Bøler fritidsklubb: aktiviteter og tider', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/boler-fritidsklubb/' }] },
+      'Warhammer og fotballkafé': { description: 'Disse aktivitetene er nevnt i den første oversikten, men vi fant ikke en aktuell offisiell kilde som bekrefter Warhammer eller en fotballkafé for 18+ på Skullerud.', important: 'Sjekk om tilbudet fortsatt finnes, hvem som kan delta og når det foregår direkte med Bydel Østensjø før du planlegger besøk.', links: [{ label: 'Kontakt Bydel Østensjø', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/kontakt-og-organisasjon/' }] },
+      'Ut på tur': { description: 'Haraløkka idrettspark, Nøklevann, Ulsrudvann og Rundtjern er steder i nærområdet for tur og friluftsliv. Vi fant ikke informasjon om et organisert, fast UngØstensjø-program knyttet til disse stedene.', important: 'Sjekk kollektivtransport, vær og lokale forhold før tur. Dersom du søker en arrangert aktivitet, spør bydelen eller klubben etter dato og påmelding.', links: [{ label: 'Bydel Østensjø: nyheter og aktiviteter', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/' }] },
+      'Konserter og musikkverksteder': { description: 'Klubb1 oppgir konserter og arrangementer, og tilbyr musikkstudio, bandveiledning og øving. Vi fant ikke et oppdatert offisielt program som bekrefter aktuelle konserter, festival eller verksteder på Skullerud.', important: 'Arrangementstid, aldersgrense, billettpris og påmelding fastsettes for hvert enkelt arrangement. Sjekk kommunens side eller Klubb1s offisielle kontoer før du drar.', links: [{ label: 'Klubb1: informasjon og sosiale medier', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/klubb1/' }, { label: 'UKM-arrangementer', url: 'https://www.ukm.no/arrangement' }] },
+      'Jobbsøkerhjelp fra Utekontakten': { description: 'Oslo kommune beskriver Utekontakten som en oppsøkende tjeneste for ungdom 10–23 år som gir råd, støtte og samtaler om blant annet skole, jobb og fritid. Jobbsøkerhjelp som et separat, bestillbart Østensjø-tilbud er ikke bekreftet.', important: 'Ta kontakt med det forebyggende teamet i Østensjø og spør etter Utekontakten. Teamet oppgir telefon 94 00 98 60.', contact: 'Forebyggende team Østensjø: 94 00 98 60', links: [{ label: 'Utekontakter i bydelene', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/barnevern-og-foreldreveiledning/utekontakter-i-bydelene/' }, { label: 'Forebyggende team Østensjø', url: 'https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/oslohjelpa/forebyggende-barne-og-ungdomsteam/' }] },
+      'Kommunal læreplassveiledning': { description: 'Oslo kommune publiserer informasjon om videregående opplæring og yrkesveiledning. En egen veiledningstjeneste for kommunale læreplasser rettet mot unge i Østensjø er ikke bekreftet.', important: 'Snakk med rådgiver på skolen eller Oppfølgingstjenesten (OT) om fag, læreplass og søknadsfrist. Frister varierer med utdanningsløp.', links: [{ label: 'Oslo: utdannings- og yrkesveiledning', url: 'https://www.oslo.kommune.no/skole-og-utdanning/videregaende-skole/soke-videregaende-skole/utdannings-og-yrkesveiledning/' }, { label: 'Oppfølgingstjenesten', url: 'https://www.oslo.kommune.no/skole-og-utdanning/videregaende-skole/soke-videregaende-skole/utdannings-og-yrkesveiledning/oppfolgingstjenesten/' }] },
+      'Leksehjelp': { description: 'Bøler fritidsklubb oppgir leksehjelp ved behov som del av aktivitetene. Leksehjelp på Skullerud aktivitetshus er ikke bekreftet i en oppdatert offentlig kilde.', important: 'Spør Bøler fritidsklubb om hvilke dager ansatte kan hjelpe. For leksehjelp på Skullerud, få tilbud og tidspunkt bekreftet direkte før oppmøte.', address: 'Bøler fritidsklubb: Bølerlia 3 A, 0691 Oslo', contact: 'Bøler junior: 469 33 977 · odd.reiersolmoen@bos.oslo.kommune.no. Bøler ungdom: 995 37 670 · vilde.marie.nilsen.bjellebo@bos.oslo.kommune.no.', links: [{ label: 'Bøler fritidsklubb: leksehjelp og kontakt', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/boler-fritidsklubb/' }] },
+      'Legevakten': { description: 'Legevakten gir helsehjelp når fastlegen er stengt og hjelpen ikke kan vente. Ring før du møter opp for råd og vurdering.', important: 'Døgnåpen. Ring 116 117 eller 23 48 72 00. Ved livstruende sykdom eller skade, ring 113.', address: 'Trondheimsveien 233, Aker sykehus, Oslo', contact: '116 117 · 23 48 72 00', links: [{ label: 'Oslo legevakt: kontakt og oppmøte', url: 'https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/' }] },
+      'ung.no': { description: 'Ung.no er det offentliges informasjonskanal for ungdom med kvalitetssikret informasjon om blant annet helse, utdanning, jobb, rettigheter og familie.', important: 'Du kan lese artikler og sende inn spørsmål til fagpersoner. Nettstedet er ikke en akuttjeneste.', links: [{ label: 'Gå til ung.no', url: 'https://www.ung.no/' }] },
+      'Bokklubb og PS5': { description: 'Deichman Oppsal sin offisielle side bekrefter spillrom og spillkonsoller. En aktuell bokklubb er ikke bekreftet på filialens side, så sjekk arrangementskalenderen for oppdatert program.', important: 'Bemannet åpningstid er oppgitt 10–16; meråpent 07–22 med Oslonøkkel fra 15 år. Arrangementer kan ha egen aldersgrense eller påmelding.', address: 'Vetlandsveien 99–101, 0685 Oslo', contact: '23 43 29 00 · oppsal@deichman.no', links: [{ label: 'Deichman Oppsal: aktiviteter og tider', url: 'https://deichman.no/bibliotekene/oppsal' }] },
+      'Gaming og e-sport': { description: 'Gaming er tilgjengelig på Stikkontakten og Klubb1; Oppsalklubben har også spill- og e-sporttilbud. Stikkontakten har gratis tilbud, spillutstyr, LAN og turneringer for ungdom med tilknytning til Bydel Østensjø.', important: 'Tilgang, aldersgruppe og registrering varierer mellom klubbene. Stikkontakten bruker Spond: JTONT for ungdom og NMDSS for junior. Se klubbens side for åpningstider.', links: [{ label: 'Stikkontakten: tider og registrering', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/stikkontakten-gamingsenter/' }, { label: 'Klubb1', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/klubb1/' }, { label: 'Oppsalklubben', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/oppsalklubben/' }] },
+      'Musikkstudio og bandøving': { description: 'Bøler fritidsklubb oppgir musikkstudio og bandrom; Klubb1 oppgir studio, bandveiledning og øving. Sjekk med den enkelte klubb om booking, opplæring og ledig tid.', important: 'Tilgjengelighet og aldersgruppe følger klubbens egne åpningstider og regler. Musikkbingen på Skullerud er ikke bekreftet i en aktuell offisiell kilde.', links: [{ label: 'Bøler fritidsklubb', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/boler-fritidsklubb/' }, { label: 'Klubb1', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/klubb1/' }] },
+      'LAN og gamingturneringer': { description: 'Stikkontakten Gamingsenter oppgir LAN, spillturneringer og e-sport som deler av tilbudet. Tilbudet for ungdom er gratis og rettet mot 8. trinn til 18 år med tilknytning til Bydel Østensjø.', important: 'Registrer deg via Spond-kode JTONT. Kontakt senteret for dato, klokkeslett og eventuell egen påmelding til arrangement.', address: 'General Ruges vei 102, 0694 Oslo', contact: 'Erlend Tønnesen · 477 88 923 · erlend.tonnesen@bos.oslo.kommune.no', links: [{ label: 'Stikkontakten: program og registrering', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/stikkontakten-gamingsenter/' }] },
+      'Utstyr på klubbene': { description: 'Stikkontakten bekrefter PC-er, VR, simulatorer, streamingrom, PS5 og Switch til bruk på senteret. Det er ikke bekreftet utlån av utstyr hjem fra klubbene eller en felles musikkutstyrbank.', important: 'Kontakt den enkelte klubb for hva som er tilgjengelig under besøket. For sports- og friluftsutstyr hjem kan du undersøke BUA Østensjø.', links: [{ label: 'Stikkontakten Gamingsenter', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/stikkontakten-gamingsenter/' }, { label: 'BUA Østensjø', url: 'https://www.bua.no/utlansordninger/bua-ostensjo' }] },
+      'Ferieaktiviteter og klubbturer': { description: 'Bydelen og klubbene kan publisere egne ferieprogrammer og turer, men et oppdatert samlet program med datoer og påmelding er ikke bekreftet.', important: 'Sjekk bydelens nyheter og kontakt din lokale klubb for neste program. Pris, plasser, alder og påmeldingsfrist må kontrolleres for hvert enkelt arrangement.', links: [{ label: 'Bydel Østensjø: nyheter og tilbud', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/' }] },
+      'UKM Østensjø': { description: 'UKM (Ung kultur møtes) er en arena der unge kan vise fram kulturuttrykk og delta i lokale arrangementer. Stikkontakten oppgir at senteret arrangerer årlig gamingturnering som del av UKM.', important: 'Lokale datoer, alder, påmelding og kostnader varierer fra arrangement til arrangement. Se den offisielle UKM-arrangementsoversikten.', links: [{ label: 'UKM-arrangementer', url: 'https://www.ukm.no/arrangement' }, { label: 'Stikkontakten', url: 'https://www.oslo.kommune.no/natur-kultur-og-fritid/fritidsklubber/stikkontakten-gamingsenter/' }] },
+      'Østensjø bydelsdager': { description: 'Bydelens kalender og nyhetsside er de offisielle stedene å se etter bydelsdager og lokale arrangementer. Et oppdatert program for neste bydelsdag er ikke bekreftet her.', important: 'Kontroller dato, sted, gratis/påmelding og program direkte i bydelens kunngjøring før du drar.', links: [{ label: 'Bydel Østensjø: nyheter og kalender', url: 'https://www.oslo.kommune.no/bydeler/bydel-ostensjo/' }] },
+      'Bibliotekarrangementer': { description: 'Deichman publiserer arrangementer og verksteder i sin arrangementskalender. Søk på Oppsal eller Bøler for lokale aktiviteter.', important: 'Aldersgrense, kapasitet, billettpris og påmelding bestemmes av det enkelte arrangementet; sjekk arrangementssiden.', links: [{ label: 'Deichman: arrangementer', url: 'https://deichman.no/arrangementer' }] },
+      'Fastlege og tannhelse': { description: 'Helsenorge gir oversikt over fastlegen og digitale tjenester som timebestilling, reseptfornyelse og e-konsultasjon der legekontoret tilbyr det. I Oslo er tannbehandling gratis i offentlig tannhelsetjeneste til og med året du fyller 18; 19–20-åringer betaler 25 % av offentlige takster. For 21–28-åringer kan nødvendig behandling koste maksimalt 25 % etter individuell vurdering.', important: 'For å finne/bytte fastlege, logg inn på Helsenorge. Kontakt offentlig tannklinikk for time og avklaring av rettigheter. For spørsmål om tannbehandling for 21–28-åringer: 23 04 07 60, mandag–fredag 09–15.', contact: 'Tannhelse 21–28 år: 23 04 07 60 (hverdager 09–15)', links: [{ label: 'Helsenorge: fastlegen', url: 'https://www.helsenorge.no/fastlegen/om/' }, { label: 'Rett til tannbehandling i Oslo', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/tannhelse-og-tannlege/rett-til-tannbehandling/' }, { label: 'Finn offentlig tannklinikk', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/tannhelse-og-tannlege/finn-din-tannklinikk/' }] },
+      'Skolehelsetjenesten': { description: 'Skolehelsetjenesten er et gratis tilbud på skolen. Helsesykepleier kan gi råd og samtaler om fysisk og psykisk helse, trivsel, pubertet og andre ting du lurer på.', important: 'Kontakt helsesykepleier på skolen for drop-in-tid eller avtale; tilgjengelighet varierer mellom skolene. Du trenger ikke være syk for å ta kontakt.', links: [{ label: 'Oslo kommune: skolehelsetjenesten', url: 'https://www.oslo.kommune.no/helse-og-omsorg/helsetjenester/helsestasjon-og-vaksine/helsesykepleier-pa-skolen/' }] },
+      'Alarmtelefonen for barn og unge': { description: 'Alarmtelefonen 116 111 er en døgnåpen, gratis og anonym telefon for barn og unge som opplever vold, overgrep, omsorgssvikt eller trenger hjelp fra voksne.', important: 'Ring 116 111 hele døgnet. Chat og SMS er oppgitt åpent 16:15–22:45 alle dager unntatt lørdag, da til 23:45. SMS: 41 71 61 11. Ved umiddelbar fare ring 112.', contact: '116 111 · SMS 41 71 61 11', links: [{ label: 'Alarmtelefonen 116 111', url: 'https://www.116111.no/' }] },
+    };
+
+    const initialRoute = location.hash.match(/^#tilbud\/([^/]+)(?:\/([^/]+))?$/);
+    const initialOfferName = initialRoute ? decodeURIComponent(initialRoute[1]) : null;
+    const state = { category: null, query: '', view: 'home', saved: new Set(), detailName: offers.some(offer => offer.name === initialOfferName) ? initialOfferName : null, actionPage: initialRoute?.[2] || null };
+    try { state.saved = new Set(JSON.parse(localStorage.getItem('ungostensjo-saved') || '[]')); } catch { state.saved = new Set(); }
+    const categoryRow = document.getElementById('categoryRow');
+    const quickGrid = document.getElementById('quickGrid');
+    const offerList = document.getElementById('offerList');
+    const quickSection = document.getElementById('quickSection');
+    const listSection = document.getElementById('listSection');
+    const appScroll = document.getElementById('appScroll');
+    const homeContent = document.getElementById('homeContent');
+    const detailSection = document.getElementById('detailSection');
+    const subpageSection = document.getElementById('subpageSection');
+
+    function renderCategories() {
+      categoryRow.innerHTML = `<button class="category-chip ${state.category === null ? 'active' : ''}" data-category="">Alle</button>` + categories.map(category => `<button class="category-chip ${state.category === category.name ? 'active' : ''}" data-category="${category.name}">${category.name}</button>`).join('');
+      categoryRow.querySelectorAll('[data-category]').forEach(button => button.addEventListener('click', () => {
+        state.category = button.dataset.category || null;
+        state.view = 'explore';
+        setNav();
+        render();
+        listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }));
+    }
+
+    function offerCard(offer) {
+      const saved = state.saved.has(offer.name);
+      return `<article class="offer-card" data-offer="${offer.name}" tabindex="0" role="button" aria-label="Les mer om ${offer.name}"><div class="offer-icon">${icon(offer.icon)}</div><div class="offer-copy"><h4>${offer.name}</h4><p>${offer.detail}</p><span class="offer-category">${offer.category}</span></div><button class="save-button ${saved ? 'saved' : ''}" data-save="${offer.name}" aria-label="${saved ? 'Fjern' : 'Lagre'} ${offer.name}" aria-pressed="${saved}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></article>`;
+    }
+
+    function actionTypes(offer) {
+      const types = [];
+      if (['Steder å være', 'Aktiviteter og hobbyer', 'Arrangementer og ferie'].includes(offer.category)) {
+        types.push(['calendar', 'Kalender'], ['hours', 'Åpningstider']);
+      }
+      if (offer.category === 'Steder å være' || offer.name === 'Ut på tur' || offer.name.includes('bad') || offerInfo[offer.name]?.address) types.push(['location', 'Sted og veibeskrivelse']);
+      types.push(['contact', 'Kontakt']);
+      if (['Steder å være', 'Arrangementer og ferie'].includes(offer.category)) types.push(['social', 'Sosiale medier']);
+      if (offer.category === 'Søk støtte' || offer.category === 'Lån utstyr') types.push(['terms', 'Vilkår og søknad']);
+      if (offer.category === 'Trygghet og rettigheter' || offer.category === 'Helse og seksualitet' || offer.category === 'Psykisk helse og støtte') types.push(['important', 'Viktig å vite']);
+      return types;
+    }
+
+    function renderDetail() {
+      const offer = offers.find(item => item.name === state.detailName);
+      if (!offer) return;
+      homeContent.hidden = true;
+      detailSection.hidden = false;
+      subpageSection.hidden = true;
+      const info = offerInfo[offer.name] || {};
+      const description = info.description || offer.detail;
+      const important = info.important || 'Det er ikke verifisert oppdaterte praktiske detaljer for dette tilbudet ennå. Bruk den offisielle lenken under for å undersøke hvem tilbudet gjelder for, hvordan du deltar og eventuelle tider eller kostnader.';
+      const actionLabels = { calendar: 'Kalender og program', hours: 'Åpningstider', location: 'Sted og veibeskrivelse', contact: 'Kontakt', social: 'Sosiale medier', terms: 'Vilkår og søknad', important: 'Viktig å vite' };
+      if (offerInfo[offer.name]?.hours && !actionTypes(offer).some(([type]) => type === 'hours')) actionTypes(offer).splice(1, 0, ['hours', 'Åpningstider']);
+      const actionIcons = { calendar: 'calendar', hours: 'calendar', location: 'place', contact: 'help', social: 'voice', terms: 'fund', important: 'shield' };
+      const infoLinks = (info.links || []).map(link => `<a class="detail-action" href="${link.url}" target="_blank" rel="noopener noreferrer">${icon('location')}<span>${link.label}</span></a>`).join('');
+      detailSection.innerHTML = `<div class="detail-view"><button class="detail-back" data-back="list">${icon('location')}Tilbake til tilbudene</button><div class="detail-hero"><div class="offer-icon">${icon(offer.icon)}</div><span class="detail-tag">${offer.category}</span><h2>${offer.name}</h2><p>${description}</p></div><div class="detail-copy"><h3>Praktisk informasjon</h3><div class="offer-facts"><div class="fact-block"><h3>Viktig å vite</h3><p>${important}</p></div>${info.hours ? `<div class="fact-block"><h3>Åpningstider</h3><p>${info.hours}</p></div>` : ''}${info.address ? `<div class="fact-block"><h3>Adresse</h3><p>${info.address}</p></div>` : ''}${info.contact ? `<div class="fact-block"><h3>Kontakt</h3><p>${linkifyContact(info.contact)}</p></div>` : ''}</div><span class="verified-label">Kilder og oppdatert informasjon</span></div><div class="section-heading" style="padding:10px 0 11px"><h3>Gå videre</h3></div><div class="detail-actions">${actionTypes(offer).map(([type]) => `<button class="detail-action" data-action="${type}">${icon(actionIcons[type])}<span>${actionLabels[type]}</span></button>`).join('')}${infoLinks}</div></div>`;
+      detailSection.querySelector('[data-back]').addEventListener('click', () => { if (history.state?.offerPage) history.back(); else backToOffers(); });
+      detailSection.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => openActionPage(offer, button.dataset.action)));
+    }
+
+    function renderActionPage(offer, type) {
+      const info = offerInfo[offer.name] || {};
+      const actionContent = {
+        calendar: ['Kalender og program', 'Aktivitetsdatoer og påmelding publiseres av arrangøren. Bruk den offisielle programlenken for oppdatert informasjon.', 'Se gjennom lenkene under. Hvis det ikke finnes et eget program, er det ikke bekreftet noen datoer for øyeblikket.'],
+        hours: ['Åpningstider', info.hours || 'Det er ikke funnet en bekreftet, aktuell åpningstid for dette tilbudet.', 'Åpningstider kan endres i ferier og ved arrangementer. Kontroller alltid dagens tider hos arrangøren før du drar.'],
+        location: ['Sted og veibeskrivelse', info.address ? `Oppgitt adresse: ${info.address}` : 'Det er ikke funnet en bekreftet adresse for dette tilbudet.', info.address ? 'Åpne kartet for å planlegge reisen. Kontroller adressen med arrangøren dersom aktiviteten foregår et annet sted.' : 'Bruk den offisielle lenken under for å finne oppdatert sted eller kontakte arrangøren.'],
+        contact: ['Kontakt', info.contact || 'Direkte kontaktinformasjon er ikke oppgitt på den verifiserte kildesiden.', 'Bruk den offisielle tilbudssiden under for kontaktinformasjon eller for å finne ansvarlig tjeneste.'],
+        social: ['Sosiale medier', 'Følg kun kontoer lenket fra arrangørens egen eller kommunens offisielle side.', 'Lenker til verifiserte kontoer vises under når de er funnet.'],
+        terms: ['Vilkår og søknad', info.important || 'Se reglene hos ansvarlig tilbyder før du søker eller melder deg på.', 'Vilkår, målgruppe og frister kan endres; bruk de offisielle lenkene før du sender inn personopplysninger.'],
+        important: ['Viktig å vite', info.important || 'Les den praktiske informasjonen og avklar detaljer med arrangøren før du møter opp.', 'Ved umiddelbar fare ring 112. Ved akutt behov for helsehjelp ring 113; legevakt nås på 116 117.']
+      };
+      const [title, description, note] = actionContent[type] || actionContent.contact;
+      const links = info.links || [];
+      const actionLinks = type === 'social' ? links.filter(link => /instagram|facebook|tiktok|snapchat/i.test(link.label)) : type === 'calendar' ? links.filter(link => /arrangement|program|kalender|aktivitet|tid|informasjon/i.test(link.label)) : type === 'terms' ? links : links.filter(link => !/instagram|facebook|tiktok|snapchat/i.test(link.label));
+      const linksMarkup = actionLinks.length ? `<div class="detail-actions">${actionLinks.map(link => `<a class="detail-action" href="${link.url}" target="_blank" rel="noopener noreferrer">${icon('location')}<span>${link.label}</span></a>`).join('')}</div>` : '<p style="margin-top:14px">Ingen direkte lenke er bekreftet for denne undersiden ennå.</p>';
+      const mapMarkup = type === 'location' && info.address ? `<a class="detail-action" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(info.address)}" target="_blank" rel="noopener noreferrer">${icon('place')}<span>Åpne adresse i kart</span></a>` : '';
+      const contactMarkup = type === 'contact' && info.contact ? `<div class="action-note">${linkifyContact(info.contact)}</div>` : '';
+      homeContent.hidden = true;
+      detailSection.hidden = true;
+      subpageSection.hidden = false;
+      subpageSection.innerHTML = `<div class="subpage-view"><button class="detail-back" data-back="detail">${icon('location')}Tilbake til ${offer.name}</button><div class="action-page">${icon(type === 'location' ? 'place' : type === 'calendar' || type === 'hours' ? 'calendar' : type === 'terms' ? 'fund' : type === 'important' ? 'shield' : 'help')}<h2>${title}</h2><p><strong>${offer.name}</strong></p><p style="margin-top:8px">${description}</p><div class="action-note">${note}</div>${contactMarkup}${mapMarkup}${linksMarkup}</div></div>`;
+      subpageSection.querySelector('[data-back]').addEventListener('click', renderDetail);
+      appScroll.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openOffer(name) {
+      state.detailName = name;
+      state.actionPage = null;
+      history.pushState({ offerPage: name }, '', `#tilbud/${encodeURIComponent(name)}`);
+      renderDetail();
+      appScroll.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openActionPage(offer, type) {
+      state.actionPage = type;
+      history.pushState({ offerPage: offer.name, actionPage: type }, '', `#tilbud/${encodeURIComponent(offer.name)}/${type}`);
+      renderActionPage(offer, type);
+    }
+
+    function backToOffers() {
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      state.detailName = null;
+      state.actionPage = null;
+      detailSection.hidden = true;
+      subpageSection.hidden = true;
+      homeContent.hidden = false;
+      render();
+    }
+
+    function render() {
+      if (state.detailName) { renderDetail(); return; }
+      homeContent.hidden = false;
+      detailSection.hidden = true;
+      subpageSection.hidden = true;
+      renderCategories();
+      const query = state.query.trim().toLocaleLowerCase('no');
+      let filtered = offers.filter(offer => (!state.category || offer.category === state.category) && (!query || `${offer.name} ${offer.detail} ${offer.category}`.toLocaleLowerCase('no').includes(query)));
+      if (state.view === 'saved') filtered = filtered.filter(offer => state.saved.has(offer.name));
+      const showList = state.view !== 'home' || !!query || !!state.category;
+      quickSection.hidden = showList;
+      listSection.hidden = !showList;
+      const title = state.view === 'saved' ? 'Lagrede tilbud' : state.category || (query ? 'Søkeresultater' : 'Alle tilbud');
+      document.getElementById('listTitle').textContent = `${title} · ${filtered.length}`;
+      offerList.innerHTML = filtered.length ? filtered.map(offerCard).join('') : '<div class="empty-state">Ingen tilbud her ennå. Prøv et annet søk.</div>';
+      quickGrid.innerHTML = [offers[0], offers[8], offers[22], offers[28], offers[45], offers[50]].map((offer, index) => `<button class="quick-card" data-quick="${offer.category}"><span class="quick-icon">${icon(['place', 'game', 'work', 'health', 'borrow', 'voice'][index])}</span><span><strong>${['Finn et sted', 'Gaming & e-sport', 'Jobb og utdanning', 'Helse og seksualitet', 'Lån utstyr', 'Påvirk bydelen'][index]}</strong><small>${['Klubber og møteplasser', 'Spill, skap og konkurrer', 'Finn muligheter', 'Noen å snakke med', 'Lån det du trenger', 'Din stemme teller'][index]}</small></span></button>`).join('');
+      document.querySelectorAll('[data-save]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); toggleSaved(button.dataset.save); }));
+      document.querySelectorAll('[data-offer]').forEach(card => {
+        card.addEventListener('click', event => { if (!event.target.closest('[data-save]')) openOffer(card.dataset.offer); });
+        card.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-save]')) { event.preventDefault(); openOffer(card.dataset.offer); } });
+      });
+      document.querySelectorAll('[data-quick]').forEach(button => button.addEventListener('click', () => chooseCategory(button.dataset.quick)));
+    }
+
+    function setNav() {
+      document.querySelectorAll('.nav-button').forEach(button => button.classList.toggle('active', button.dataset.view === state.view));
+    }
+    function chooseCategory(category) {
+      state.detailName = null;
+      state.actionPage = null;
+      state.category = category;
+      state.view = 'explore';
+      state.query = '';
+      document.getElementById('searchInput').value = '';
+      setNav(); render();
+      listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function toggleSaved(name) {
+      if (state.saved.has(name)) { state.saved.delete(name); showToast('Fjernet fra lagrede tilbud'); }
+      else { state.saved.add(name); showToast('Lagret til senere'); }
+      try { localStorage.setItem('ungostensjo-saved', JSON.stringify([...state.saved])); } catch {}
+      render();
+    }
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 1900);
+    }
+    function setView(view) {
+      state.detailName = null;
+      state.actionPage = null;
+      state.view = view;
+      state.category = null;
+      if (view === 'home') { state.query = ''; document.getElementById('searchInput').value = ''; }
+      setNav(); render(); appScroll.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', event => {
+      state.query = event.target.value;
+      state.view = 'explore';
+      state.category = null;
+      setNav(); render();
+    });
+    document.querySelectorAll('.nav-button').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
+    document.getElementById('topSaved').addEventListener('click', () => setView('saved'));
+    document.getElementById('browseButton').addEventListener('click', () => setView('explore'));
+    document.getElementById('allCategories').addEventListener('click', () => setView('explore'));
+    document.getElementById('allOffers').addEventListener('click', () => setView('explore'));
+    document.getElementById('clearFilter').addEventListener('click', () => setView('explore'));
+    window.addEventListener('popstate', () => {
+      if (state.actionPage) { state.actionPage = null; renderDetail(); }
+      else if (state.detailName) backToOffers();
+      else setView('home');
+    });
+    document.addEventListener('keydown', event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); document.getElementById('searchInput').focus(); }
+      if (event.key === 'Escape' && document.activeElement === document.getElementById('searchInput')) { document.getElementById('searchInput').value = ''; state.query = ''; render(); }
+    });
+    if (state.detailName && state.actionPage) renderActionPage(offers.find(offer => offer.name === state.detailName), state.actionPage);
+    else render();
+  </script>
+</body>
+</html>
