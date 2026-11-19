@@ -68,8 +68,17 @@
     body.has-local-edits #editStatus { display: flex; }
     .edit-toolbar p { flex: 1 1 100%; margin: 0 0 3px; font-size: 10px; line-height: 1.45; }
     .edit-toolbar button { padding: 7px 9px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 10px; font-weight: 700; cursor: pointer; }
-    .edit-card-button { display: none; align-self: flex-start; flex: none; padding: 5px 7px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 9px; font-weight: 700; cursor: pointer; }
-    body.editor-mode .edit-card-button { display: block; }
+    .edit-card-button, .move-card-button { display: none; flex: none; padding: 5px 7px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 10px; font-weight: 700; cursor: pointer; }
+    .move-controls { display: none; flex: none; flex-direction: column; gap: 4px; }
+    body.editor-mode .move-controls { display: flex; }
+    .move-card-button { min-width: 30px; min-height: 28px; }
+    .edit-toolbar a { color: var(--oslo-blue); font-size: 10px; font-weight: 700; }
+    body.editor-mode .edit-card-button, body.editor-mode .move-card-button { display: block; }
+    body.editor-mode .offer-card { border-style: dashed; }
+    body.editor-mode .offer-card[draggable="true"] { cursor: grab; }
+    .offer-card.dragging { opacity: .45; }
+    .offer-card.drag-target { outline: 2px dashed var(--oslo-blue); outline-offset: 2px; }
+    .proposal-submit { background: var(--oslo-blue) !important; color: #fff !important; }
     .editor-dialog { width: min(520px, calc(100vw - 28px)); max-height: min(88vh, 760px); padding: 0; border: 2px solid var(--oslo-blue); border-radius: 0; background: #fff; color: var(--ink); }
     .editor-dialog::backdrop { background: #15152c99; }
     .editor-form { display: grid; gap: 12px; padding: 20px; }
@@ -278,8 +287,8 @@
           <div style="display:flex;gap:7px;align-items:center"><button class="edit-toggle" id="editToggle" aria-pressed="false" aria-label="Slå på redigeringsmodus"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4a2.1 2.1 0 0 0-3-3L5.2 16.2 4 20Z"/></svg><span>Rediger</span></button><button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></div>
         </header>
         <div class="app-scroll" id="appScroll">
-          <div id="editToolbar" class="edit-toolbar"><p>Redigeringsmodus: Endringer lagres kun i denne nettleseren. Eksporter JSON og oppdater kildefilen for å publisere endringer for alle.</p><button type="button" id="exportContent">Eksporter innhold</button><button type="button" id="resetContent">Nullstill redigeringer</button></div>
-          <div id="editStatus" class="edit-toolbar" hidden><p>Du har redigert tekst lokalt. Endringene er ikke publisert for andre besøkende.</p><button type="button" id="exportStatus">Eksporter JSON</button></div>
+          <div id="editToolbar" class="edit-toolbar"><p>Lag et privat utkast, endre rekkefølgen, og send oppsettet som forslag. Forslaget er ikke synlig for andre automatisk.</p><button type="button" id="showAllForEditing">Vis alle tilbud</button><button type="button" id="exportContent">Eksporter forslag</button><button type="button" id="restoreOrder">Gjenopprett rekkefølge</button><button type="button" id="resetContent">Nullstill utkast</button><a href="https://github.com/walimsalim/UngOstensjo/issues/new?template=blank_issues" target="_blank" rel="noopener noreferrer">Se forslag som allerede er sendt inn</a></div>
+          <div id="editStatus" class="edit-toolbar" hidden><p>Du har et ulagret forslag i denne nettleseren.</p><button type="button" id="exportStatus">Eksporter JSON</button><button type="button" id="submitProposal" class="proposal-submit">Send som forslag</button></div>
           <div id="homeContent">
           <section class="welcome" id="welcome">
             <div class="welcome-label">Hei, dette skjer rundt deg</div>
@@ -310,7 +319,8 @@
           <button class="nav-button" data-view="saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg><span>Lagret</span></button>
         </nav>
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
-        <dialog class="editor-dialog" id="offerEditor"><form class="editor-form" id="offerEditorForm"><h2 id="editorTitle">Rediger tilbud</h2><p>Endringene lagres lokalt i denne nettleseren. Ingenting publiseres før kildefilen oppdateres.</p><label>Navn<input id="editName" required maxlength="100"></label><label>Kort beskrivelse<textarea id="editSummary" maxlength="300"></textarea></label><label>Informasjon og målgruppe<textarea id="editDescription" maxlength="1200"></textarea></label><label>Viktig å vite<textarea id="editImportant" maxlength="1200"></textarea></label><label>Åpningstider<textarea id="editHours" maxlength="500"></textarea></label><label>Adresse<textarea id="editAddress" maxlength="300"></textarea></label><label>Kontakt<textarea id="editContact" maxlength="500"></textarea></label><div class="editor-buttons"><button type="button" id="cancelEdit">Avbryt</button><button type="submit">Lagre lokalt</button></div></form></dialog>
+        <dialog class="editor-dialog" id="offerEditor"><form class="editor-form" id="offerEditorForm"><h2 id="editorTitle">Rediger tilbud</h2><p>Endringene lagres kun i din nettleser. Ingenting publiseres før de sendes inn som forslag.</p><label>Navn<input id="editName" required maxlength="100"></label><label>Kort beskrivelse<textarea id="editSummary" maxlength="300"></textarea></label><label>Informasjon og målgruppe<textarea id="editDescription" maxlength="1200"></textarea></label><label>Viktig å vite<textarea id="editImportant" maxlength="1200"></textarea></label><label>Åpningstider<textarea id="editHours" maxlength="500"></textarea></label><label>Adresse<textarea id="editAddress" maxlength="300"></textarea></label><label>Kontakt<textarea id="editContact" maxlength="500"></textarea></label><div class="editor-buttons"><button type="button" id="cancelEdit">Avbryt</button><button type="submit">Lagre utkast</button></div></form></dialog>
+        <dialog class="editor-dialog" id="proposalDialog"><form class="editor-form" id="proposalForm"><h2>Send inn forslag</h2><p>Forslaget sendes til UngØstensjø for gjennomgang. Det publiseres ikke automatisk. Ikke ta med sensitiv informasjon.</p><label>Navn (valgfritt)<input id="proposalName" maxlength="80" autocomplete="name"></label><label>Hva bør endres?<textarea id="proposalNote" maxlength="1000" placeholder="Beskriv kort hvorfor dette oppsettet er nyttig"></textarea></label><div class="editor-buttons"><button type="button" id="cancelProposal">Avbryt</button><button type="submit" class="proposal-submit">Send forslag</button></div></form></dialog>
       </div>
     </section>
   </main>
@@ -465,9 +475,10 @@
 
     const initialRoute = location.hash.match(/^#tilbud\/([^/]+)(?:\/([^/]+))?$/);
     const initialOfferName = initialRoute ? decodeURIComponent(initialRoute[1]) : null;
-    const state = { category: null, query: '', view: 'home', saved: new Set(), detailName: offers.some(offer => offer.name === initialOfferName) ? initialOfferName : null, actionPage: initialRoute?.[2] || null, editor: false, editingName: null, changes: {} };
+    const state = { category: null, query: '', view: 'home', saved: new Set(), detailName: offers.some(offer => offer.name === initialOfferName) ? initialOfferName : null, actionPage: initialRoute?.[2] || null, editor: false, editingName: null, changes: {}, order: [] };
     try { state.saved = new Set(JSON.parse(localStorage.getItem('ungostensjo-saved') || '[]')); } catch { state.saved = new Set(); }
     try { state.changes = JSON.parse(localStorage.getItem('ungostensjo-content-edits') || '{}'); } catch { state.changes = {}; }
+    try { state.order = JSON.parse(localStorage.getItem('ungostensjo-offer-order') || '[]'); } catch { state.order = []; }
     const categoryRow = document.getElementById('categoryRow');
     const quickGrid = document.getElementById('quickGrid');
     const offerList = document.getElementById('offerList');
@@ -514,7 +525,7 @@
     function offerCard(originalOffer) {
       const offer = visibleOffer(originalOffer);
       const saved = state.saved.has(originalOffer.name);
-      return `<article class="offer-card" data-offer="${escapeHTML(originalOffer.name)}" tabindex="0" role="button" aria-label="Les mer om ${escapeHTML(offer.name)}"><div class="offer-icon">${icon(offer.icon)}</div><div class="offer-copy"><h4>${escapeHTML(offer.name)}</h4><p>${escapeHTML(offer.detail)}</p><span class="offer-category">${escapeHTML(offer.category)}</span></div><button class="save-button ${saved ? 'saved' : ''}" data-save="${escapeHTML(originalOffer.name)}" aria-label="${saved ? 'Fjern' : 'Lagre'} ${escapeHTML(offer.name)}" aria-pressed="${saved}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button><button class="edit-card-button" data-edit="${escapeHTML(originalOffer.name)}" aria-label="Rediger ${escapeHTML(offer.name)}">Rediger</button></article>`;
+      return `<article class="offer-card" data-offer="${escapeHTML(originalOffer.name)}" tabindex="0" role="button" aria-label="Les mer om ${escapeHTML(offer.name)}"><div class="offer-icon">${icon(offer.icon)}</div><div class="offer-copy"><h4>${escapeHTML(offer.name)}</h4><p>${escapeHTML(offer.detail)}</p><span class="offer-category">${escapeHTML(offer.category)}</span></div><button class="save-button ${saved ? 'saved' : ''}" data-save="${escapeHTML(originalOffer.name)}" aria-label="${saved ? 'Fjern' : 'Lagre'} ${escapeHTML(offer.name)}" aria-pressed="${saved}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button><button class="edit-card-button" data-edit="${escapeHTML(originalOffer.name)}" aria-label="Rediger ${escapeHTML(offer.name)}">Rediger</button><span class="move-controls"><button class="move-card-button" data-move="${escapeHTML(originalOffer.name)}" data-direction="-1" aria-label="Flytt ${escapeHTML(offer.name)} opp">↑</button><button class="move-card-button" data-move="${escapeHTML(originalOffer.name)}" data-direction="1" aria-label="Flytt ${escapeHTML(offer.name)} ned">↓</button></span></article>`;
     }
 
     function actionTypes(offer) {
@@ -543,7 +554,7 @@
       const actionLabels = { calendar: 'Kalender og program', hours: 'Åpningstider', location: 'Sted og veibeskrivelse', contact: 'Kontakt', social: 'Sosiale medier', terms: 'Vilkår og søknad', important: 'Viktig å vite' };
       if (offerInfo[offer.name]?.hours && !actionTypes(offer).some(([type]) => type === 'hours')) actionTypes(offer).splice(1, 0, ['hours', 'Åpningstider']);
       const actionIcons = { calendar: 'calendar', hours: 'calendar', location: 'place', contact: 'help', social: 'voice', terms: 'fund', important: 'shield' };
-      const infoLinks = (info.links || []).map(link => `<a class="detail-action" href="${link.url}" target="_blank" rel="noopener noreferrer">${icon('location')}<span>${link.label}</span></a>`).join('');
+      const infoLinks = (info.links || []).map(link => `<a class="detail-action" href="${link.url}" target="_blank" rel="noopener noreferrer">${icon('location')}<span>${escapeHTML(link.label)}</span></a>`).join('');
       detailSection.innerHTML = `<div class="detail-view"><div style="display:flex;justify-content:space-between;align-items:center"><button class="detail-back" data-back="list">${icon('location')}Tilbake til tilbudene</button>${state.editor ? `<button class="edit-toggle" data-edit-detail="${escapeHTML(originalOffer.name)}">Rediger tilbud</button>` : ''}</div><div class="detail-hero"><div class="offer-icon">${icon(offer.icon)}</div><span class="detail-tag">${offer.category}</span><h2>${escapeHTML(offer.name)}</h2><p>${escapeHTML(description)}</p></div><div class="detail-copy"><h3>Praktisk informasjon</h3><div class="offer-facts"><div class="fact-block"><h3>Viktig å vite</h3><p>${escapeHTML(important)}</p></div>${info.hours ? `<div class="fact-block"><h3>Åpningstider</h3><p>${escapeHTML(info.hours)}</p></div>` : ''}${info.address ? `<div class="fact-block"><h3>Adresse</h3><p>${escapeHTML(info.address)}</p></div>` : ''}${info.contact ? `<div class="fact-block"><h3>Kontakt</h3><p>${linkifyContact(info.contact)}</p></div>` : ''}</div><span class="verified-label">Kilder og oppdatert informasjon</span></div><div class="section-heading" style="padding:10px 0 11px"><h3>Gå videre</h3></div><div class="detail-actions">${actionTypes(offer).map(([type]) => `<button class="detail-action" data-action="${type}">${icon(actionIcons[type])}<span>${actionLabels[type]}</span></button>`).join('')}${infoLinks}</div></div>`;
       detailSection.querySelector('[data-back]').addEventListener('click', () => { if (history.state?.offerPage) history.back(); else backToOffers(); });
       detailSection.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => openActionPage(originalOffer, button.dataset.action)));
@@ -601,6 +612,42 @@
       render();
     }
 
+    function orderedOffers() {
+      const baseOffers = [...offers];
+      const categoryOrder = state.changes.__categoryOrder;
+      if (Array.isArray(categoryOrder) && categoryOrder.length) {
+        const categoryMap = new Map(categories.map(category => [category.name, category]));
+        const orderedCategories = categoryOrder.map(name => categoryMap.get(name)).filter(Boolean);
+        for (const category of categories) if (!orderedCategories.includes(category)) orderedCategories.push(category);
+        categories.splice(0, categories.length, ...orderedCategories);
+      }
+      if (!state.order.length) return baseOffers;
+      const byName = new Map(baseOffers.map(offer => [offer.name, offer]));
+      const ordered = state.order.map(name => byName.get(name)).filter(Boolean);
+      return [...ordered, ...baseOffers.filter(offer => !state.order.includes(offer.name))];
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem('ungostensjo-content-edits', JSON.stringify(state.changes));
+        localStorage.setItem('ungostensjo-offer-order', JSON.stringify(state.order));
+      } catch {
+        throw new Error('Utkastet kunne ikke lagres i nettleseren');
+      }
+      updateEditorUI();
+    }
+
+    function moveOffer(name, direction) {
+      const visibleNames = [...document.querySelectorAll('[data-offer]')].map(card => card.dataset.offer);
+      const current = visibleNames.indexOf(name);
+      const next = current + direction;
+      if (current < 0 || next < 0 || next >= visibleNames.length) return;
+      [visibleNames[current], visibleNames[next]] = [visibleNames[next], visibleNames[current]];
+      state.order = [...visibleNames, ...orderedOffers().map(offer => offer.name).filter(item => !visibleNames.includes(item))];
+      saveDraft();
+      render();
+    }
+
     function render() {
       if (state.detailName) { renderDetail(); return; }
       homeContent.hidden = false;
@@ -608,7 +655,8 @@
       subpageSection.hidden = true;
       renderCategories();
       const query = state.query.trim().toLocaleLowerCase('no');
-      let filtered = offers.filter(offer => (!state.category || offer.category === state.category) && (!query || `${offer.name} ${offer.detail} ${offer.category}`.toLocaleLowerCase('no').includes(query)));
+      let filtered = orderedOffers().filter(offer => (!state.category || offer.category === state.category) && (!query || `${visibleOffer(offer).name} ${visibleOffer(offer).detail} ${offer.category}`.toLocaleLowerCase('no').includes(query)));
+      if (state.category) filtered = filtered.filter(offer => offer.category === state.category);
       if (state.view === 'saved') filtered = filtered.filter(offer => state.saved.has(offer.name));
       const showList = state.view !== 'home' || !!query || !!state.category;
       quickSection.hidden = showList;
@@ -616,20 +664,50 @@
       const title = state.view === 'saved' ? 'Lagrede tilbud' : state.category || (query ? 'Søkeresultater' : 'Alle tilbud');
       document.getElementById('listTitle').textContent = `${title} · ${filtered.length}`;
       offerList.innerHTML = filtered.length ? filtered.map(offerCard).join('') : '<div class="empty-state">Ingen tilbud her ennå. Prøv et annet søk.</div>';
+      if (state.editor) enableCardReordering();
       quickGrid.innerHTML = [offers[0], offers[8], offers[22], offers[28], offers[45], offers[50]].map((offer, index) => `<button class="quick-card" data-quick="${offer.category}"><span class="quick-icon">${icon(['place', 'game', 'work', 'health', 'borrow', 'voice'][index])}</span><span><strong>${['Finn et sted', 'Gaming & e-sport', 'Jobb og utdanning', 'Helse og seksualitet', 'Lån utstyr', 'Påvirk bydelen'][index]}</strong><small>${['Klubber og møteplasser', 'Spill, skap og konkurrer', 'Finn muligheter', 'Noen å snakke med', 'Lån det du trenger', 'Din stemme teller'][index]}</small></span></button>`).join('');
       document.querySelectorAll('[data-save]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); toggleSaved(button.dataset.save); }));
       document.querySelectorAll('[data-offer]').forEach(card => {
-        card.addEventListener('click', event => { if (event.target.closest('[data-edit]')) return openOfferEditor(card.dataset.offer); if (!event.target.closest('[data-save]')) openOffer(card.dataset.offer); });
+        card.addEventListener('click', event => { if (event.target.closest('[data-edit]')) return openOfferEditor(card.dataset.offer); if (event.target.closest('[data-move]')) return moveOffer(card.dataset.offer, Number(event.target.dataset.direction)); if (!event.target.closest('[data-save]')) openOffer(card.dataset.offer); });
         card.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-save], [data-edit]')) { event.preventDefault(); openOffer(card.dataset.offer); } });
       });
       document.querySelectorAll('[data-quick]').forEach(button => button.addEventListener('click', () => chooseCategory(button.dataset.quick)));
       updateEditorUI();
     }
 
+    function enableCardReordering() {
+      document.querySelectorAll('[data-offer]').forEach(card => {
+        const key = card.dataset.offer;
+        card.draggable = true;
+        card.addEventListener('dragstart', event => { event.dataTransfer.setData('text/plain', key); event.dataTransfer.effectAllowed = 'move'; card.classList.add('dragging'); });
+        card.addEventListener('dragend', () => { card.classList.remove('dragging'); document.querySelectorAll('.drag-target').forEach(item => item.classList.remove('drag-target')); });
+        card.addEventListener('dragover', event => { event.preventDefault(); card.classList.add('drag-target'); });
+        card.addEventListener('dragleave', () => card.classList.remove('drag-target'));
+        card.addEventListener('drop', event => {
+          event.preventDefault();
+          card.classList.remove('drag-target');
+          const draggedKey = event.dataTransfer.getData('text/plain');
+          if (!draggedKey || draggedKey === key) return;
+          const visibleKeys = [...document.querySelectorAll('[data-offer]')].map(item => item.dataset.offer);
+          const from = visibleKeys.indexOf(draggedKey);
+          const to = visibleKeys.indexOf(key);
+          if (from < 0 || to < 0) return;
+          visibleKeys.splice(to, 0, visibleKeys.splice(from, 1)[0]);
+          state.order = [...visibleKeys, ...orderedOffers().map(item => item.name).filter(name => !visibleKeys.includes(name))];
+          saveDraft();
+          render();
+        });
+      });
+    }
+
+    function hasDraftChanges() {
+      return Object.keys(state.changes).length > 0 || state.order.length > 0;
+    }
+
     function updateEditorUI() {
       document.body.classList.toggle('editor-mode', state.editor);
-      document.body.classList.toggle('has-local-edits', Object.keys(state.changes).length > 0);
-      document.getElementById('editStatus').hidden = Object.keys(state.changes).length === 0;
+      document.body.classList.toggle('has-local-edits', hasDraftChanges());
+      document.getElementById('editStatus').hidden = !hasDraftChanges();
       const toggle = document.getElementById('editToggle');
       toggle.classList.toggle('active', state.editor);
       toggle.setAttribute('aria-pressed', String(state.editor));
@@ -692,7 +770,7 @@
       const address = document.getElementById('editAddress').value.trim();
       const contact = document.getElementById('editContact').value.trim();
       state.changes[state.editingName] = { ...edits, name, summary, description, important, hours, address, contact };
-      try { localStorage.setItem('ungostensjo-content-edits', JSON.stringify(state.changes)); }
+      try { saveDraft(); }
       catch { showToast('Kunne ikke lagre. Nettleserlagring er full.'); return; }
       document.getElementById('offerEditor').close();
       updateEditorUI();
@@ -711,13 +789,53 @@
     }
     document.getElementById('exportContent').addEventListener('click', exportLocalEdits);
     document.getElementById('exportStatus').addEventListener('click', exportLocalEdits);
+    document.getElementById('submitProposal').addEventListener('click', () => document.getElementById('proposalDialog').showModal());
+    document.getElementById('cancelProposal').addEventListener('click', () => document.getElementById('proposalDialog').close());
+    document.getElementById('proposalForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const proposal = {
+        title: `Forslag til UngØstensjø-oppsett fra ${document.getElementById('proposalName').value.trim() || 'besøkende'}`,
+        name: document.getElementById('proposalName').value.trim(),
+        note: document.getElementById('proposalNote').value.trim(),
+        layout: state.order,
+        edits: state.changes,
+        createdAt: new Date().toISOString()
+      };
+      if (!proposal.note && !Object.keys(proposal.edits).length && !proposal.layout.length) {
+        showToast('Gjør en endring eller skriv en kommentar først');
+        return;
+      }
+      const body = [proposal.note || 'Se vedlagt forslag til oppsett.', `Navn: ${proposal.name || 'Ikke oppgitt'}`, '', 'Oppsett og endringer:', '```json', JSON.stringify({ layout: proposal.layout, edits: proposal.edits }, null, 2), '```', '', `Sendt fra UngØstensjø: ${location.href.split('#')[0]}`].join('\n');
+      const issueURL = `https://github.com/walimsalim/UngOstensjo/issues/new?title=${encodeURIComponent(proposal.title)}&body=${encodeURIComponent(body)}`;
+      const proposalWindow = window.open(issueURL, '_blank', 'noopener,noreferrer');
+      document.getElementById('proposalDialog').close();
+      if (proposalWindow) showToast('Forslaget åpnes i GitHub. Logg inn og trykk Submit new issue for å sende det.');
+      else showToast('Tillat popup-vinduer for GitHub, eller bruk eksportknappen.');
+    });
+    document.getElementById('showAllForEditing').addEventListener('click', () => {
+      state.view = 'explore';
+      state.category = null;
+      state.query = '';
+      document.getElementById('searchInput').value = '';
+      setNav();
+      render();
+    });
+    document.getElementById('restoreOrder').addEventListener('click', () => {
+      if (!window.confirm('Gjenopprette opprinnelig rekkefølge på tilbudene?')) return;
+      state.order = [];
+      localStorage.removeItem('ungostensjo-offer-order');
+      render();
+      showToast('Opprinnelig rekkefølge gjenopprettet');
+    });
     document.getElementById('resetContent').addEventListener('click', () => {
-      if (!window.confirm('Fjerne alle lokalt lagrede tekstendringer i denne nettleseren?')) return;
+      if (!window.confirm('Fjerne alle lokalt lagrede endringer og rekkefølge i denne nettleseren?')) return;
       state.changes = {};
+      state.order = [];
       localStorage.removeItem('ungostensjo-content-edits');
+      localStorage.removeItem('ungostensjo-offer-order');
       updateEditorUI();
       render();
-      showToast('Lokale tekstendringer er fjernet');
+      showToast('Lokale endringer er fjernet');
     });
     document.getElementById('searchInput').addEventListener('input', event => {
       state.query = event.target.value;
