@@ -79,6 +79,9 @@
     .offer-card.dragging { opacity: .45; }
     .offer-card.drag-target { outline: 2px dashed var(--oslo-blue); outline-offset: 2px; }
     .proposal-submit { background: var(--oslo-blue) !important; color: #fff !important; }
+    .import-preview { padding: 12px; border-left: 4px solid var(--oslo-green); background: #F8F0DD; color: #2C2C2C; font-size: 11px; line-height: 1.55; white-space: pre-wrap; }
+    .import-preview.error { border-color: var(--oslo-red); }
+    .editor-form input[type="file"] { min-height: auto; padding: 7px; }
     .editor-dialog { width: min(520px, calc(100vw - 28px)); max-height: min(88vh, 760px); padding: 0; border: 2px solid var(--oslo-blue); border-radius: 0; background: #fff; color: var(--ink); }
     .editor-dialog::backdrop { background: #15152c99; }
     .editor-form { display: grid; gap: 12px; padding: 20px; }
@@ -287,7 +290,7 @@
           <div style="display:flex;gap:7px;align-items:center"><button class="edit-toggle" id="editToggle" aria-pressed="false" aria-label="Slå på redigeringsmodus"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4a2.1 2.1 0 0 0-3-3L5.2 16.2 4 20Z"/></svg><span>Rediger</span></button><button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></div>
         </header>
         <div class="app-scroll" id="appScroll">
-          <div id="editToolbar" class="edit-toolbar"><p>Lag et privat utkast, endre rekkefølgen, og send oppsettet som forslag. Forslaget er ikke synlig for andre automatisk.</p><button type="button" id="showAllForEditing">Vis alle tilbud</button><button type="button" id="exportContent">Eksporter forslag</button><button type="button" id="restoreOrder">Gjenopprett rekkefølge</button><button type="button" id="resetContent">Nullstill utkast</button><a href="https://github.com/walimsalim/UngOstensjo/issues/new?template=blank_issues" target="_blank" rel="noopener noreferrer">Se forslag som allerede er sendt inn</a></div>
+          <div id="editToolbar" class="edit-toolbar"><p>Lag et privat utkast, endre rekkefølgen, og send oppsettet som forslag. Forslaget er ikke synlig for andre automatisk.</p><button type="button" id="showAllForEditing">Vis alle tilbud</button><button type="button" id="importProposalButton">Importer JSON / Issue</button><input id="proposalFileInput" type="file" accept=".json,application/json" hidden><button type="button" id="exportContent">Eksporter forslag</button><button type="button" id="restoreOrder">Gjenopprett rekkefølge</button><button type="button" id="resetContent">Nullstill utkast</button><a href="https://github.com/walimsalim/UngOstensjo/issues/new?template=blank_issues" target="_blank" rel="noopener noreferrer">Se forslag som allerede er sendt inn</a></div>
           <div id="editStatus" class="edit-toolbar" hidden><p>Du har et ulagret forslag i denne nettleseren.</p><button type="button" id="exportStatus">Eksporter JSON</button><button type="button" id="submitProposal" class="proposal-submit">Send som forslag</button></div>
           <div id="homeContent">
           <section class="welcome" id="welcome">
@@ -321,6 +324,7 @@
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
         <dialog class="editor-dialog" id="offerEditor"><form class="editor-form" id="offerEditorForm"><h2 id="editorTitle">Rediger tilbud</h2><p>Endringene lagres kun i din nettleser. Ingenting publiseres før de sendes inn som forslag.</p><label>Navn<input id="editName" required maxlength="100"></label><label>Kort beskrivelse<textarea id="editSummary" maxlength="300"></textarea></label><label>Informasjon og målgruppe<textarea id="editDescription" maxlength="1200"></textarea></label><label>Viktig å vite<textarea id="editImportant" maxlength="1200"></textarea></label><label>Åpningstider<textarea id="editHours" maxlength="500"></textarea></label><label>Adresse<textarea id="editAddress" maxlength="300"></textarea></label><label>Kontakt<textarea id="editContact" maxlength="500"></textarea></label><div class="editor-buttons"><button type="button" id="cancelEdit">Avbryt</button><button type="submit">Lagre utkast</button></div></form></dialog>
         <dialog class="editor-dialog" id="proposalDialog"><form class="editor-form" id="proposalForm"><h2>Send inn forslag</h2><p>Forslaget sendes til UngØstensjø for gjennomgang. Det publiseres ikke automatisk. Ikke ta med sensitiv informasjon.</p><label>Navn (valgfritt)<input id="proposalName" maxlength="80" autocomplete="name"></label><label>Hva bør endres?<textarea id="proposalNote" maxlength="1000" placeholder="Beskriv kort hvorfor dette oppsettet er nyttig"></textarea></label><div class="editor-buttons"><button type="button" id="cancelProposal">Avbryt</button><button type="submit" class="proposal-submit">Send forslag</button></div></form></dialog>
+        <dialog class="editor-dialog" id="importDialog"><form class="editor-form" id="importForm"><h2>Importer forslag</h2><p>Velg en eksportert JSON-fil, lim inn JSON eller lim inn lenken til en GitHub Issue. Importen oppretter et lokalt utkast bare i denne nettleseren.</p><label>JSON-fil<input id="importFile" type="file" accept=".json,application/json"></label><label>GitHub Issue-lenke eller JSON<textarea id="importText" maxlength="100000" placeholder="https://github.com/bruker/repo/issues/123 eller lim inn JSON"></textarea></label><div id="importPreview" class="import-preview" hidden aria-live="polite"></div><div class="editor-buttons"><button type="button" id="cancelImport">Avbryt</button><button type="button" id="previewImport">Forhåndsvis</button><button type="submit" class="proposal-submit">Bruk som lokalt utkast</button></div></form></dialog>
       </div>
     </section>
   </main>
@@ -779,7 +783,7 @@
       else render();
     });
     function exportLocalEdits() {
-      const data = JSON.stringify(state.changes, null, 2);
+      const data = JSON.stringify({ layout: orderedOffers().map(offer => offer.name), edits: state.changes }, null, 2);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
       link.download = 'ungostensjo-innhold.json';
@@ -789,6 +793,130 @@
     }
     document.getElementById('exportContent').addEventListener('click', exportLocalEdits);
     document.getElementById('exportStatus').addEventListener('click', exportLocalEdits);
+    let pendingImport = null;
+    function parseImportPayload(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('JSON må være et objekt.');
+      let candidate = value;
+      if (typeof value.body === 'string') candidate = parseIssueBody(value.body);
+      if (candidate.proposal && typeof candidate.proposal === 'object') candidate = candidate.proposal;
+      if (candidate.data && typeof candidate.data === 'object') candidate = candidate.data;
+      const knownNames = new Set(offers.map(offer => offer.name));
+      const sourceEdits = candidate.edits || candidate.changes || {};
+      if (!sourceEdits || typeof sourceEdits !== 'object' || Array.isArray(sourceEdits)) throw new Error('Fant ikke gyldige tekstendringer i forslaget.');
+      const editFields = { name: 100, summary: 300, description: 1200, important: 1200, hours: 500, address: 300, contact: 500 };
+      const edits = {};
+      for (const [offerName, fields] of Object.entries(sourceEdits)) {
+        if (!knownNames.has(offerName) || !fields || typeof fields !== 'object' || Array.isArray(fields)) continue;
+        const cleanFields = {};
+        for (const [field, maxLength] of Object.entries(editFields)) {
+          if (typeof fields[field] === 'string') cleanFields[field] = fields[field].slice(0, maxLength);
+        }
+        if (Object.keys(cleanFields).length) edits[offerName] = cleanFields;
+      }
+      const sourceLayout = Array.isArray(candidate.layout) ? candidate.layout : Array.isArray(candidate.order) ? candidate.order : [];
+      const layout = [...new Set(sourceLayout.filter(name => typeof name === 'string' && knownNames.has(name)))];
+      if (!Object.keys(edits).length && !layout.length) throw new Error('Fant ingen kjente tilbudsendringer eller gyldig rekkefølge i forslaget.');
+      const skippedEdits = Object.keys(sourceEdits).length - Object.keys(edits).length;
+      return { edits, layout, skippedEdits };
+    }
+
+    function parseIssueBody(body) {
+      const blocks = [...body.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+      for (const block of blocks) {
+        try { return JSON.parse(block[1].trim()); } catch {}
+      }
+      throw new Error('Fant ingen gyldig JSON-blokk i GitHub-saken. Lim inn JSON-blokken fra saken.');
+    }
+
+    async function readImportText(text) {
+      const issueMatch = text.trim().match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)(?:[/?#].*)?$/i);
+      if (issueMatch) {
+        const [, owner, repository, issueNumber] = issueMatch;
+        const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues/${issueNumber}`, { headers: { Accept: 'application/vnd.github+json' } });
+        if (!response.ok) throw new Error(response.status === 404 ? 'Fant ikke saken. Sjekk at repoet og saken er offentlige.' : `GitHub svarte med feil ${response.status}. Prøv JSON-innliming i stedet.`);
+        const issue = await response.json();
+        if (!issue.body) throw new Error('Denne GitHub-saken har ingen beskrivelse.');
+        return parseImportPayload({ body: issue.body });
+      }
+      let parsed;
+      try { parsed = JSON.parse(text); }
+      catch { throw new Error('Teksten er ikke gyldig JSON eller en GitHub Issue-lenke.'); }
+      return parseImportPayload(parsed);
+    }
+
+    function showImportPreview(result) {
+      pendingImport = result;
+      const edits = Object.keys(result.edits);
+      const preview = document.getElementById('importPreview');
+      preview.hidden = false;
+      preview.classList.remove('error');
+      preview.textContent = `Klar til forhåndsvisning\n${edits.length} tilbud med tekstendringer\n${result.layout.length} tilbud med importert rekkefølge${result.skippedEdits ? `\n${result.skippedEdits} ukjente/ugyldige endringer blir hoppet over` : ''}\n\nEndringene legges kun til ditt lokale utkast.`;
+    }
+
+    async function previewImport() {
+      const text = document.getElementById('importText').value.trim();
+      const file = document.getElementById('importFile').files[0];
+      const preview = document.getElementById('importPreview');
+      try {
+        let result;
+        if (file) result = await readImportText(await file.text());
+        else if (text) result = await readImportText(text);
+        else throw new Error('Velg en JSON-fil, lim inn JSON eller lim inn en GitHub Issue-lenke.');
+        showImportPreview(result);
+      } catch (error) {
+        pendingImport = null;
+        preview.hidden = false;
+        preview.classList.add('error');
+        preview.textContent = error.message;
+      }
+    }
+
+    document.getElementById('importProposalButton').addEventListener('click', () => {
+      pendingImport = null;
+      document.getElementById('importPreview').hidden = true;
+      document.getElementById('importPreview').classList.remove('error');
+      document.getElementById('importFile').value = '';
+      document.getElementById('importText').value = '';
+      document.getElementById('importDialog').showModal();
+    });
+    document.getElementById('importFile').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      document.getElementById('importText').value = '';
+      try { showImportPreview(await readImportText(await file.text())); }
+      catch (error) {
+        pendingImport = null;
+        const preview = document.getElementById('importPreview');
+        preview.hidden = false;
+        preview.classList.add('error');
+        preview.textContent = error.message;
+      }
+    });
+    document.getElementById('previewImport').addEventListener('click', previewImport);
+    document.getElementById('cancelImport').addEventListener('click', () => document.getElementById('importDialog').close());
+    document.getElementById('importForm').addEventListener('submit', event => {
+      event.preventDefault();
+      if (!pendingImport) return previewImport();
+      state.changes = { ...state.changes, ...pendingImport.edits };
+      if (pendingImport.layout.length) {
+        state.order = [...pendingImport.layout, ...orderedOffers().map(offer => offer.name).filter(name => !pendingImport.layout.includes(name))];
+      }
+      try { saveDraft(); }
+      catch { showToast('Importen kunne ikke lagres i nettleseren'); return; }
+      state.editor = true;
+      updateEditorUI();
+      document.getElementById('importDialog').close();
+      state.detailName = null;
+      state.actionPage = null;
+      state.view = 'explore';
+      state.category = null;
+      state.query = '';
+      document.getElementById('searchInput').value = '';
+      setNav();
+      render();
+      listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Forslaget er importert som lokalt utkast');
+    });
     document.getElementById('submitProposal').addEventListener('click', () => document.getElementById('proposalDialog').showModal());
     document.getElementById('cancelProposal').addEventListener('click', () => document.getElementById('proposalDialog').close());
     document.getElementById('proposalForm').addEventListener('submit', event => {
