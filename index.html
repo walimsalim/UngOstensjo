@@ -661,7 +661,7 @@
       const showList = state.view !== 'home' || !!query || !!state.category;
       quickSection.hidden = showList;
       listSection.hidden = !showList;
-      const title = state.view === 'saved' ? 'Lagrede tilbud' : state.category || (query ? 'Søkeresultater' : 'Alle tilbud');
+      const title = state.view === 'saved' ? 'Lagrede tilbud' : state.view === 'explore' && !state.category && !query ? 'Alle tilbud' : state.category || (query ? 'Søkeresultater' : 'Alle tilbud');
       document.getElementById('listTitle').textContent = `${title} · ${filtered.length}`;
       offerList.innerHTML = filtered.length ? filtered.map(offerCard).join('') : '<div class="empty-state">Ingen tilbud her ennå. Prøv et annet søk.</div>';
       if (state.editor) enableCardReordering();
@@ -813,12 +813,16 @@
       else showToast('Tillat popup-vinduer for GitHub, eller bruk eksportknappen.');
     });
     document.getElementById('showAllForEditing').addEventListener('click', () => {
+      state.detailName = null;
+      state.actionPage = null;
       state.view = 'explore';
       state.category = null;
       state.query = '';
       document.getElementById('searchInput').value = '';
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
       setNav();
       render();
+      listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     document.getElementById('restoreOrder').addEventListener('click', () => {
       if (!window.confirm('Gjenopprette opprinnelig rekkefølge på tilbudene?')) return;
