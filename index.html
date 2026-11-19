@@ -61,6 +61,27 @@
     .brand-sub { margin-top: 1px; color: #859087; font-size: 10px; }
     .header-icon { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fff; display: grid; place-items: center; cursor: pointer; }
     .header-icon svg { width: 17px; height: 17px; }
+    .edit-toggle { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .edit-toggle.active { background: var(--oslo-blue); color: #fff; }
+    .edit-toolbar { display: none; align-items: center; gap: 7px; flex-wrap: wrap; margin: 0 20px 14px; padding: 11px; border-left: 4px solid var(--oslo-cyan); background: var(--canvas); }
+    body.editor-mode #editToolbar { display: flex; }
+    body.has-local-edits #editStatus { display: flex; }
+    .edit-toolbar p { flex: 1 1 100%; margin: 0 0 3px; font-size: 10px; line-height: 1.45; }
+    .edit-toolbar button { padding: 7px 9px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 10px; font-weight: 700; cursor: pointer; }
+    .edit-card-button { display: none; align-self: flex-start; flex: none; padding: 5px 7px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 9px; font-weight: 700; cursor: pointer; }
+    body.editor-mode .edit-card-button { display: block; }
+    .editor-dialog { width: min(520px, calc(100vw - 28px)); max-height: min(88vh, 760px); padding: 0; border: 2px solid var(--oslo-blue); border-radius: 0; background: #fff; color: var(--ink); }
+    .editor-dialog::backdrop { background: #15152c99; }
+    .editor-form { display: grid; gap: 12px; padding: 20px; }
+    .editor-form h2 { margin: 0; font: 700 21px Arial, sans-serif; }
+    .editor-form > p { margin: -4px 0 2px; color: #575757; font-size: 11px; line-height: 1.5; }
+    .editor-form label { display: grid; gap: 5px; font-size: 11px; font-weight: 700; }
+    .editor-form textarea, .editor-form input { width: 100%; min-height: 40px; padding: 9px; resize: vertical; border: 1px solid #9a9a9a; border-radius: 0; color: var(--ink); font: 12px/1.5 Arial, sans-serif; }
+    .editor-form textarea { min-height: 70px; }
+    .editor-form textarea:focus { outline: 2px solid var(--oslo-blue); outline-offset: 1px; }
+    .editor-form .editor-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+    .editor-buttons button { padding: 10px 13px; border: 1px solid var(--oslo-blue); background: #fff; color: var(--oslo-blue); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .editor-buttons button[type="submit"] { background: var(--oslo-blue); color: #fff; }
     .welcome { margin: 0 20px; padding: 19px 18px 18px; border-radius: 21px; background: var(--green); color: #fff; position: relative; overflow: hidden; }
     .welcome::after { content: ''; position: absolute; right: -43px; top: -62px; width: 168px; height: 168px; border: 1px solid #ffffff25; border-radius: 50%; box-shadow: 0 0 0 20px #ffffff0a, 0 0 0 42px #ffffff08; }
     .welcome-label { color: #d7e6d6; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
@@ -140,6 +161,10 @@
     .desktop-note p { color: #2C2C2C; }
     .online-dot { border-radius: 0; background: var(--oslo-green); box-shadow: none; }
     .device { border: 9px solid var(--oslo-blue); border-radius: 34px; box-shadow: var(--shadow); }
+    .app-header { gap: 6px; }
+    .app-header > div:last-child { flex: none; }
+    .edit-toggle { gap: 5px; padding: 0 7px; font-size: 10px; }
+    #topSaved { width: 34px; height: 34px; }
     .device::before { border-radius: 0 0 10px 10px; background: var(--oslo-blue); }
     .statusbar { color: var(--oslo-blue); }
     .app-header { border-top: 5px solid var(--oslo-blue); padding-top: 12px; }
@@ -166,6 +191,7 @@
     .quick-card:nth-child(3n + 2) .quick-icon { background: var(--oslo-red); }
     .quick-card:nth-child(3n) .quick-icon { background: var(--oslo-green); }
     .quick-card strong, .offer-copy h4 { font: 700 12px/1.4 Arial, sans-serif; letter-spacing: 0; }
+    .offer-copy { padding-right: 2px; }
     .quick-card small, .offer-copy p { color: #575757; font-size: 11px; }
     .offer-category { color: var(--oslo-blue); font-size: 10px; }
     .save-button { border-radius: 0; color: var(--oslo-blue); }
@@ -249,9 +275,11 @@
             <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.2 12 5l9 8.2"/><path d="M6.5 11.5v7h11v-7M10 18.5v-4h4v4"/><path d="m15 4 2 1.8"/></svg></div>
             <div><div class="brand-name">UngØstensjø</div><div class="brand-sub">Ditt sted i bydelen</div></div>
           </div>
-          <button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button>
+          <div style="display:flex;gap:7px;align-items:center"><button class="edit-toggle" id="editToggle" aria-pressed="false" aria-label="Slå på redigeringsmodus"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4a2.1 2.1 0 0 0-3-3L5.2 16.2 4 20Z"/></svg><span>Rediger</span></button><button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></div>
         </header>
         <div class="app-scroll" id="appScroll">
+          <div id="editToolbar" class="edit-toolbar"><p>Redigeringsmodus: Endringer lagres kun i denne nettleseren. Eksporter JSON og oppdater kildefilen for å publisere endringer for alle.</p><button type="button" id="exportContent">Eksporter innhold</button><button type="button" id="resetContent">Nullstill redigeringer</button></div>
+          <div id="editStatus" class="edit-toolbar" hidden><p>Du har redigert tekst lokalt. Endringene er ikke publisert for andre besøkende.</p><button type="button" id="exportStatus">Eksporter JSON</button></div>
           <div id="homeContent">
           <section class="welcome" id="welcome">
             <div class="welcome-label">Hei, dette skjer rundt deg</div>
@@ -282,6 +310,7 @@
           <button class="nav-button" data-view="saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg><span>Lagret</span></button>
         </nav>
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <dialog class="editor-dialog" id="offerEditor"><form class="editor-form" id="offerEditorForm"><h2 id="editorTitle">Rediger tilbud</h2><p>Endringene lagres lokalt i denne nettleseren. Ingenting publiseres før kildefilen oppdateres.</p><label>Navn<input id="editName" required maxlength="100"></label><label>Kort beskrivelse<textarea id="editSummary" maxlength="300"></textarea></label><label>Informasjon og målgruppe<textarea id="editDescription" maxlength="1200"></textarea></label><label>Viktig å vite<textarea id="editImportant" maxlength="1200"></textarea></label><label>Åpningstider<textarea id="editHours" maxlength="500"></textarea></label><label>Adresse<textarea id="editAddress" maxlength="300"></textarea></label><label>Kontakt<textarea id="editContact" maxlength="500"></textarea></label><div class="editor-buttons"><button type="button" id="cancelEdit">Avbryt</button><button type="submit">Lagre lokalt</button></div></form></dialog>
       </div>
     </section>
   </main>
@@ -317,23 +346,24 @@
       location: '<path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9.5 20v-6h5v6"/>'
     };
     const icon = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name] || iconPaths.spark}</svg>`;
-    const linkifyContact = (contact) => contact.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, email => `<a href="mailto:${email}">${email}</a>`).replace(/(?<![\w@])(?:\+?\d[\d ()-]{6,}\d)(?![\w@])/g, phone => `<a href="tel:${phone.replace(/\D/g, '')}">${phone}</a>`);
+    const escapeHTML = (value) => String(value ?? '').replace(/[&<>\"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[char]));
+    const linkifyContact = (contact) => escapeHTML(contact).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, email => `<a href="mailto:${email}">${email}</a>`).replace(/(?<![\w@])(?:\+?\d[\d ()-]{6,}\d)(?![\w@])/g, phone => `<a href="tel:${phone.replace(/\D/g, '')}">${phone}</a>`);
 
     const offers = [
-      { name: 'Oppsalklubben', category: 'Steder å være', detail: 'Fritidsklubb og møteplass for ungdom i Oppsal.', icon: 'place' },
-      { name: 'Bøler fritidsklubb', category: 'Steder å være', detail: 'Klubbtilbud med klatring, turn, DJ-utstyr, bandøving og leksehjelp.', icon: 'place' },
-      { name: 'Klubb1 på Manglerud', category: 'Steder å være', detail: 'Møteplass med gaming, e-sport, musikkstudio, bandøving og temakvelder.', icon: 'place' },
+      { name: 'Oppsalklubben', category: 'Steder å være', detail: 'Gratis klubb for juniorer og ungdom med gaming, matlaging, forming og kafé.', icon: 'place' },
+      { name: 'Bøler fritidsklubb', category: 'Steder å være', detail: 'Gratis klubb med gaming, klatring, DJ, musikkstudio, turnutstyr og leksehjelp.', icon: 'place' },
+      { name: 'Klubb1 på Manglerud', category: 'Steder å være', detail: 'Klubb for junior og ungdom med gaming, studio, bandveiledning, 3D-print og turneringer.', icon: 'place' },
       { name: 'Skullerud aktivitetshus', category: 'Steder å være', detail: 'Nevnt i den opprinnelige oversikten; aktuelle tilbud og besøksinformasjon må bekreftes.', icon: 'place' },
-      { name: 'Stikkontakten Gamingsenter', category: 'Steder å være', detail: 'Gaming, e-sport og turneringer. Gaming- og musikkutstyr kan brukes på klubben.', icon: 'game' },
-      { name: 'Abildsøklubben', category: 'Steder å være', detail: 'Klubbtilbud for juniorer.', icon: 'place' },
-      { name: 'Deichman Oppsal', category: 'Steder å være', detail: 'Bibliotek med bokklubb, PS5-aktiviteter, arrangementer og verksteder.', icon: 'book' },
+      { name: 'Stikkontakten Gamingsenter', category: 'Steder å være', detail: 'Gratis gamingtilbud for ungdom og juniorer med spill-PC-er, VR, simulatorer, PS5, Switch og LAN.', icon: 'game' },
+      { name: 'Abildsøklubben', category: 'Steder å være', detail: 'Gratis klubb for 5.–7. trinn med gaming, hobbyaktiviteter, dans og kafé.', icon: 'place' },
+      { name: 'Deichman Oppsal', category: 'Steder å være', detail: 'Bibliotek med spillrom og spillkonsoller, meråpent tilbud og arrangementer.', icon: 'book' },
       { name: 'Deichman Bøler', category: 'Steder å være', detail: 'Bibliotek og møteplass med arrangementer og verksteder.', icon: 'book' },
       { name: 'Gaming og e-sport', category: 'Aktiviteter og hobbyer', detail: 'Spill og e-sport på Stikkontakten, Klubb1 og Oppsalklubben.', icon: 'game' },
-      { name: 'Musikkstudio og bandøving', category: 'Aktiviteter og hobbyer', detail: 'Spill inn musikk og øv med band på Klubb1, Bøler og i Musikkbingen på Skullerud.', icon: 'music' },
+      { name: 'Musikkstudio og bandøving', category: 'Aktiviteter og hobbyer', detail: 'Klubb1 og Bøler oppgir studio, bandrom og øving. Sjekk med klubben om booking og ledig tid.', icon: 'music' },
       { name: 'Matlaging og forming', category: 'Aktiviteter og hobbyer', detail: 'Kreative aktiviteter og matlaging på Oppsalklubben.', icon: 'spark' },
-      { name: 'Klatring, turn og DJ', category: 'Aktiviteter og hobbyer', detail: 'Klatring, turn og DJ-utstyr på Bøler fritidsklubb.', icon: 'spark' },
-      { name: 'Warhammer og fotballkafé', category: 'Aktiviteter og hobbyer', detail: 'Warhammer og 18+ fotballkafé på Skullerud aktivitetshus.', icon: 'game' },
-      { name: 'Bokklubb og PS5', category: 'Aktiviteter og hobbyer', detail: 'Deichman Oppsal har spillrom og spillkonsoller. Bokklubb må bekreftes i oppdatert program.', icon: 'book' },
+      { name: 'Klatring, turn og DJ', category: 'Aktiviteter og hobbyer', detail: 'Bøler fritidsklubb oppgir klatring, turnutstyr, DJ-booth og diskotek.', icon: 'spark' },
+      { name: 'Warhammer og fotballkafé', category: 'Aktiviteter og hobbyer', detail: 'Oppført i den opprinnelige oversikten, men ikke bekreftet på en aktuell offisiell side.', icon: 'game' },
+      { name: 'Bokklubb og PS5', category: 'Aktiviteter og hobbyer', detail: 'Deichman Oppsal har spillrom og spillkonsoller. Sjekk filialens kalender for kommende aktiviteter.', icon: 'book' },
       { name: 'Svømming og skate', category: 'Aktiviteter og hobbyer', detail: 'Manglerud bad har basseng og svømmefasiliteter. Skate og parkour her er ikke bekreftet som organisert tilbud.', icon: 'spark' },
       { name: 'Ut på tur', category: 'Aktiviteter og hobbyer', detail: 'Haraløkka idrettspark, Nøklevann, Ulsrudvann og Rundtjern byr på tur- og friluftsmuligheter.', icon: 'place' },
       { name: 'UKM Østensjø', category: 'Arrangementer og ferie', detail: 'UKM-arrangement for unge i Østensjø.', icon: 'calendar' },
@@ -370,7 +400,7 @@
       { name: 'Utstyr på klubbene', category: 'Lån utstyr', detail: 'Gaming- og musikkutstyr til bruk på klubbene, blant annet hos Stikkontakten, Klubb1, Bøler og Skullerud.', icon: 'game' },
       { name: 'Tilskudd til ungdomstiltak', category: 'Søk støtte', detail: 'Tilskudd i Bydel Østensjø for ungdom som vil gjennomføre egne aktiviteter og prosjekter.', icon: 'fund' },
       { name: 'Oslos fritidskort', category: 'Søk støtte', detail: 'Støtte til godkjente fritidsaktiviteter etter ordningens vilkår.', icon: 'fund' },
-      { name: 'Østensjø ungdomsråd', category: 'Vær med og bestem', detail: 'Vær med på å påvirke aktiviteter, arrangementer og utviklingen av tilbud i bydelen.', icon: 'voice' },
+      { name: 'Østensjø ungdomsråd', category: 'Vær med og bestem', detail: 'Rådgivende organ for bydelsutvalget. Ungdom 12–18 år kan gi innspill i åpne møter.', icon: 'voice' },
       { name: 'Klubbråd', category: 'Vær med og bestem', detail: 'Klubbråd ved fritidsklubbene gir ungdom mulighet til å påvirke aktiviteter og innkjøp.', icon: 'voice' },
       { name: 'URÅD ved Deichman Oppsal', category: 'Vær med og bestem', detail: 'Påvirk aktiviteter, arrangementer og tilbud på biblioteket.', icon: 'voice' }
     ];
@@ -435,8 +465,9 @@
 
     const initialRoute = location.hash.match(/^#tilbud\/([^/]+)(?:\/([^/]+))?$/);
     const initialOfferName = initialRoute ? decodeURIComponent(initialRoute[1]) : null;
-    const state = { category: null, query: '', view: 'home', saved: new Set(), detailName: offers.some(offer => offer.name === initialOfferName) ? initialOfferName : null, actionPage: initialRoute?.[2] || null };
+    const state = { category: null, query: '', view: 'home', saved: new Set(), detailName: offers.some(offer => offer.name === initialOfferName) ? initialOfferName : null, actionPage: initialRoute?.[2] || null, editor: false, editingName: null, changes: {} };
     try { state.saved = new Set(JSON.parse(localStorage.getItem('ungostensjo-saved') || '[]')); } catch { state.saved = new Set(); }
+    try { state.changes = JSON.parse(localStorage.getItem('ungostensjo-content-edits') || '{}'); } catch { state.changes = {}; }
     const categoryRow = document.getElementById('categoryRow');
     const quickGrid = document.getElementById('quickGrid');
     const offerList = document.getElementById('offerList');
@@ -446,6 +477,23 @@
     const homeContent = document.getElementById('homeContent');
     const detailSection = document.getElementById('detailSection');
     const subpageSection = document.getElementById('subpageSection');
+
+    function openOfferEditor(name) {
+      const offer = offers.find(item => item.name === name);
+      if (!offer) return;
+      const edits = state.changes[name] || {};
+      const info = { ...(offerInfo[name] || {}), ...edits };
+      state.editingName = name;
+      document.getElementById('editorTitle').textContent = `Rediger: ${name}`;
+      document.getElementById('editName').value = edits.name ?? offer.name;
+      document.getElementById('editSummary').value = edits.summary ?? offer.detail;
+      document.getElementById('editDescription').value = info.description ?? offer.detail;
+      document.getElementById('editImportant').value = info.important ?? '';
+      document.getElementById('editHours').value = info.hours ?? '';
+      document.getElementById('editAddress').value = info.address ?? '';
+      document.getElementById('editContact').value = info.contact ?? '';
+      document.getElementById('offerEditor').showModal();
+    }
 
     function renderCategories() {
       categoryRow.innerHTML = `<button class="category-chip ${state.category === null ? 'active' : ''}" data-category="">Alle</button>` + categories.map(category => `<button class="category-chip ${state.category === category.name ? 'active' : ''}" data-category="${category.name}">${category.name}</button>`).join('');
@@ -458,9 +506,15 @@
       }));
     }
 
-    function offerCard(offer) {
-      const saved = state.saved.has(offer.name);
-      return `<article class="offer-card" data-offer="${offer.name}" tabindex="0" role="button" aria-label="Les mer om ${offer.name}"><div class="offer-icon">${icon(offer.icon)}</div><div class="offer-copy"><h4>${offer.name}</h4><p>${offer.detail}</p><span class="offer-category">${offer.category}</span></div><button class="save-button ${saved ? 'saved' : ''}" data-save="${offer.name}" aria-label="${saved ? 'Fjern' : 'Lagre'} ${offer.name}" aria-pressed="${saved}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></article>`;
+    function visibleOffer(offer) {
+      const edits = state.changes[offer.name] || {};
+      return { ...offer, ...edits, detail: edits.summary ?? offer.detail };
+    }
+
+    function offerCard(originalOffer) {
+      const offer = visibleOffer(originalOffer);
+      const saved = state.saved.has(originalOffer.name);
+      return `<article class="offer-card" data-offer="${escapeHTML(originalOffer.name)}" tabindex="0" role="button" aria-label="Les mer om ${escapeHTML(offer.name)}"><div class="offer-icon">${icon(offer.icon)}</div><div class="offer-copy"><h4>${escapeHTML(offer.name)}</h4><p>${escapeHTML(offer.detail)}</p><span class="offer-category">${escapeHTML(offer.category)}</span></div><button class="save-button ${saved ? 'saved' : ''}" data-save="${escapeHTML(originalOffer.name)}" aria-label="${saved ? 'Fjern' : 'Lagre'} ${escapeHTML(offer.name)}" aria-pressed="${saved}"><svg viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button><button class="edit-card-button" data-edit="${escapeHTML(originalOffer.name)}" aria-label="Rediger ${escapeHTML(offer.name)}">Rediger</button></article>`;
     }
 
     function actionTypes(offer) {
@@ -477,25 +531,29 @@
     }
 
     function renderDetail() {
-      const offer = offers.find(item => item.name === state.detailName);
-      if (!offer) return;
+      const originalOffer = offers.find(item => item.name === state.detailName);
+      if (!originalOffer) return;
+      const offer = visibleOffer(originalOffer);
       homeContent.hidden = true;
       detailSection.hidden = false;
       subpageSection.hidden = true;
-      const info = offerInfo[offer.name] || {};
+      const info = { ...(offerInfo[originalOffer.name] || {}), ...(state.changes[originalOffer.name] || {}) };
       const description = info.description || offer.detail;
       const important = info.important || 'Det er ikke verifisert oppdaterte praktiske detaljer for dette tilbudet ennå. Bruk den offisielle lenken under for å undersøke hvem tilbudet gjelder for, hvordan du deltar og eventuelle tider eller kostnader.';
       const actionLabels = { calendar: 'Kalender og program', hours: 'Åpningstider', location: 'Sted og veibeskrivelse', contact: 'Kontakt', social: 'Sosiale medier', terms: 'Vilkår og søknad', important: 'Viktig å vite' };
       if (offerInfo[offer.name]?.hours && !actionTypes(offer).some(([type]) => type === 'hours')) actionTypes(offer).splice(1, 0, ['hours', 'Åpningstider']);
       const actionIcons = { calendar: 'calendar', hours: 'calendar', location: 'place', contact: 'help', social: 'voice', terms: 'fund', important: 'shield' };
       const infoLinks = (info.links || []).map(link => `<a class="detail-action" href="${link.url}" target="_blank" rel="noopener noreferrer">${icon('location')}<span>${link.label}</span></a>`).join('');
-      detailSection.innerHTML = `<div class="detail-view"><button class="detail-back" data-back="list">${icon('location')}Tilbake til tilbudene</button><div class="detail-hero"><div class="offer-icon">${icon(offer.icon)}</div><span class="detail-tag">${offer.category}</span><h2>${offer.name}</h2><p>${description}</p></div><div class="detail-copy"><h3>Praktisk informasjon</h3><div class="offer-facts"><div class="fact-block"><h3>Viktig å vite</h3><p>${important}</p></div>${info.hours ? `<div class="fact-block"><h3>Åpningstider</h3><p>${info.hours}</p></div>` : ''}${info.address ? `<div class="fact-block"><h3>Adresse</h3><p>${info.address}</p></div>` : ''}${info.contact ? `<div class="fact-block"><h3>Kontakt</h3><p>${linkifyContact(info.contact)}</p></div>` : ''}</div><span class="verified-label">Kilder og oppdatert informasjon</span></div><div class="section-heading" style="padding:10px 0 11px"><h3>Gå videre</h3></div><div class="detail-actions">${actionTypes(offer).map(([type]) => `<button class="detail-action" data-action="${type}">${icon(actionIcons[type])}<span>${actionLabels[type]}</span></button>`).join('')}${infoLinks}</div></div>`;
+      detailSection.innerHTML = `<div class="detail-view"><div style="display:flex;justify-content:space-between;align-items:center"><button class="detail-back" data-back="list">${icon('location')}Tilbake til tilbudene</button>${state.editor ? `<button class="edit-toggle" data-edit-detail="${escapeHTML(originalOffer.name)}">Rediger tilbud</button>` : ''}</div><div class="detail-hero"><div class="offer-icon">${icon(offer.icon)}</div><span class="detail-tag">${offer.category}</span><h2>${escapeHTML(offer.name)}</h2><p>${escapeHTML(description)}</p></div><div class="detail-copy"><h3>Praktisk informasjon</h3><div class="offer-facts"><div class="fact-block"><h3>Viktig å vite</h3><p>${escapeHTML(important)}</p></div>${info.hours ? `<div class="fact-block"><h3>Åpningstider</h3><p>${escapeHTML(info.hours)}</p></div>` : ''}${info.address ? `<div class="fact-block"><h3>Adresse</h3><p>${escapeHTML(info.address)}</p></div>` : ''}${info.contact ? `<div class="fact-block"><h3>Kontakt</h3><p>${linkifyContact(info.contact)}</p></div>` : ''}</div><span class="verified-label">Kilder og oppdatert informasjon</span></div><div class="section-heading" style="padding:10px 0 11px"><h3>Gå videre</h3></div><div class="detail-actions">${actionTypes(offer).map(([type]) => `<button class="detail-action" data-action="${type}">${icon(actionIcons[type])}<span>${actionLabels[type]}</span></button>`).join('')}${infoLinks}</div></div>`;
       detailSection.querySelector('[data-back]').addEventListener('click', () => { if (history.state?.offerPage) history.back(); else backToOffers(); });
-      detailSection.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => openActionPage(offer, button.dataset.action)));
+      detailSection.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => openActionPage(originalOffer, button.dataset.action)));
+      detailSection.querySelector('[data-edit-detail]')?.addEventListener('click', () => openOfferEditor(originalOffer.name));
     }
 
     function renderActionPage(offer, type) {
-      const info = offerInfo[offer.name] || {};
+      const originalOffer = offers.find(item => item.name === offer.name) || offer;
+      offer = visibleOffer(originalOffer);
+      const info = { ...(offerInfo[originalOffer.name] || {}), ...(state.changes[originalOffer.name] || {}) };
       const actionContent = {
         calendar: ['Kalender og program', 'Aktivitetsdatoer og påmelding publiseres av arrangøren. Bruk den offisielle programlenken for oppdatert informasjon.', 'Se gjennom lenkene under. Hvis det ikke finnes et eget program, er det ikke bekreftet noen datoer for øyeblikket.'],
         hours: ['Åpningstider', info.hours || 'Det er ikke funnet en bekreftet, aktuell åpningstid for dette tilbudet.', 'Åpningstider kan endres i ferier og ved arrangementer. Kontroller alltid dagens tider hos arrangøren før du drar.'],
@@ -561,10 +619,22 @@
       quickGrid.innerHTML = [offers[0], offers[8], offers[22], offers[28], offers[45], offers[50]].map((offer, index) => `<button class="quick-card" data-quick="${offer.category}"><span class="quick-icon">${icon(['place', 'game', 'work', 'health', 'borrow', 'voice'][index])}</span><span><strong>${['Finn et sted', 'Gaming & e-sport', 'Jobb og utdanning', 'Helse og seksualitet', 'Lån utstyr', 'Påvirk bydelen'][index]}</strong><small>${['Klubber og møteplasser', 'Spill, skap og konkurrer', 'Finn muligheter', 'Noen å snakke med', 'Lån det du trenger', 'Din stemme teller'][index]}</small></span></button>`).join('');
       document.querySelectorAll('[data-save]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); toggleSaved(button.dataset.save); }));
       document.querySelectorAll('[data-offer]').forEach(card => {
-        card.addEventListener('click', event => { if (!event.target.closest('[data-save]')) openOffer(card.dataset.offer); });
-        card.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-save]')) { event.preventDefault(); openOffer(card.dataset.offer); } });
+        card.addEventListener('click', event => { if (event.target.closest('[data-edit]')) return openOfferEditor(card.dataset.offer); if (!event.target.closest('[data-save]')) openOffer(card.dataset.offer); });
+        card.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-save], [data-edit]')) { event.preventDefault(); openOffer(card.dataset.offer); } });
       });
       document.querySelectorAll('[data-quick]').forEach(button => button.addEventListener('click', () => chooseCategory(button.dataset.quick)));
+      updateEditorUI();
+    }
+
+    function updateEditorUI() {
+      document.body.classList.toggle('editor-mode', state.editor);
+      document.body.classList.toggle('has-local-edits', Object.keys(state.changes).length > 0);
+      document.getElementById('editStatus').hidden = Object.keys(state.changes).length === 0;
+      const toggle = document.getElementById('editToggle');
+      toggle.classList.toggle('active', state.editor);
+      toggle.setAttribute('aria-pressed', String(state.editor));
+      toggle.setAttribute('aria-label', state.editor ? 'Slå av redigeringsmodus' : 'Slå på redigeringsmodus');
+      toggle.querySelector('span').textContent = state.editor ? 'Ferdig' : 'Rediger';
     }
 
     function setNav() {
@@ -603,6 +673,52 @@
       setNav(); render(); appScroll.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    document.getElementById('editToggle').addEventListener('click', () => {
+      state.editor = !state.editor;
+      updateEditorUI();
+      showToast(state.editor ? 'Redigeringsmodus er på' : 'Redigeringsmodus er av');
+    });
+    document.getElementById('cancelEdit').addEventListener('click', () => document.getElementById('offerEditor').close());
+    document.getElementById('offerEditorForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const original = offers.find(offer => offer.name === state.editingName);
+      if (!original) return;
+      const edits = state.changes[state.editingName] || {};
+      const name = document.getElementById('editName').value.trim();
+      const summary = document.getElementById('editSummary').value.trim();
+      const description = document.getElementById('editDescription').value.trim();
+      const important = document.getElementById('editImportant').value.trim();
+      const hours = document.getElementById('editHours').value.trim();
+      const address = document.getElementById('editAddress').value.trim();
+      const contact = document.getElementById('editContact').value.trim();
+      state.changes[state.editingName] = { ...edits, name, summary, description, important, hours, address, contact };
+      try { localStorage.setItem('ungostensjo-content-edits', JSON.stringify(state.changes)); }
+      catch { showToast('Kunne ikke lagre. Nettleserlagring er full.'); return; }
+      document.getElementById('offerEditor').close();
+      updateEditorUI();
+      showToast('Lagret lokalt i denne nettleseren');
+      if (state.detailName === state.editingName) renderDetail();
+      else render();
+    });
+    function exportLocalEdits() {
+      const data = JSON.stringify(state.changes, null, 2);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      link.download = 'ungostensjo-innhold.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+      showToast('Endringene ble eksportert som JSON');
+    }
+    document.getElementById('exportContent').addEventListener('click', exportLocalEdits);
+    document.getElementById('exportStatus').addEventListener('click', exportLocalEdits);
+    document.getElementById('resetContent').addEventListener('click', () => {
+      if (!window.confirm('Fjerne alle lokalt lagrede tekstendringer i denne nettleseren?')) return;
+      state.changes = {};
+      localStorage.removeItem('ungostensjo-content-edits');
+      updateEditorUI();
+      render();
+      showToast('Lokale tekstendringer er fjernet');
+    });
     document.getElementById('searchInput').addEventListener('input', event => {
       state.query = event.target.value;
       state.view = 'explore';
