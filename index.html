@@ -295,7 +295,6 @@
         </header>
         <div class="app-scroll" id="appScroll">
           <div id="editToolbar" class="edit-toolbar"><p>Lag et privat utkast og flytt på tilbudskortene. Endringene er bare synlige i denne nettleseren.</p><button type="button" id="importProposalButton">Importer endringsforslag</button><button type="button" id="resetContent">Nullstill utkast</button><button type="button" id="submitProposal" class="proposal-submit">Send som forslag</button><a href="https://github.com/walimsalim/UngOstensjo/issues?state=all" target="_blank" rel="noopener noreferrer">Se innsendte forslag</a></div>
-          <div id="editStatus" class="edit-toolbar" hidden><p>Du har et lokalt utkast klart til innsending.</p></div>
           <div id="homeContent">
           <section class="welcome" id="welcome">
             <div class="welcome-label">Hei, dette skjer rundt deg</div>
@@ -723,7 +722,6 @@
     function updateEditorUI() {
       document.body.classList.toggle('editor-mode', state.editor);
       document.body.classList.toggle('has-local-edits', hasDraftChanges());
-      document.getElementById('editStatus').hidden = !hasDraftChanges();
       const submitProposal = document.getElementById('submitProposal');
       submitProposal.disabled = !hasDraftChanges();
       submitProposal.title = hasDraftChanges() ? '' : 'Gjør en endring eller flytt på et tilbud først';
