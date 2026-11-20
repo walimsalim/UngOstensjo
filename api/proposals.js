@@ -115,8 +115,13 @@ module.exports = async function handler(req, res) {
   });
   const result = await githubResponse.json().catch(() => ({}));
   if (!githubResponse.ok) {
-    console.error('GitHub proposal submission failed:', githubResponse.status);
-    return respond(res, githubResponse.status === 401 || githubResponse.status === 403 ? 503 : 502, { error: 'Forslaget kunne ikke lagres nå. Prøv igjen senere.' });
+    const errorMessage = typeof result.message === 'string' ? result.message : '';
+    console.error('GitHub proposal submission failed:', githubResponse.status, errorMessage);
+    if (githubResponse.status === 401) return respond(res, 503, { error: 'GitHub-tokenet er ugyldig eller utløpt. Lag en ny token med Issues: Read and write for UngOstensjo.' });
+    if (githubResponse.status === 403) return respond(res, 503, { error: 'GitHub avviste tokenet. Kontroller at tokenet har Issues: Read and write for UngOstensjo, at repoet er valgt, og at organisasjonstilgang er godkjent.' });
+    if (githubResponse.status === 404) return respond(res, 503, { error: 'GitHub fant ikke UngOstensjo-repoet med tokenets tilgang. Kontroller at UngOstensjo er valgt i tokenet.' });
+    if (githubResponse.status === 422) return respond(res, 503, { error: 'GitHub avviste forslaget. Sjekk at Issue-funksjonen er aktivert og prøv igjen.' });
+    return respond(res, 502, { error: 'GitHub kunne ikke lagre forslaget akkurat nå. Prøv igjen senere.' });
   }
   return respond(res, 201, { proposal, issueUrl: result.html_url });
 };
