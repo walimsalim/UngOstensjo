@@ -55,7 +55,8 @@
     .app-scroll::-webkit-scrollbar { display: none; }
     .app-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 23px 20px; }
     .brand { display: flex; gap: 10px; align-items: center; }
-    .brand { cursor: pointer; }
+    .brand { cursor: pointer; color: inherit; text-decoration: none; }
+    .brand:link, .brand:visited, .brand:hover, .brand:active { color: inherit; text-decoration: none; }
     .brand:focus-visible { outline: 2px solid var(--oslo-blue); outline-offset: 4px; }
     .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: var(--lime); }
     .brand-mark svg { width: 21px; height: 21px; }
