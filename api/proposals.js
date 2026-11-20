@@ -61,6 +61,15 @@ module.exports = async function handler(req, res) {
 
   const contentLength = Number(req.headers['content-length'] || 0);
   if (contentLength > MAX_BODY_BYTES) return respond(res, 413, { error: 'Forslaget er for stort.' });
+  let payload = req.body;
+  if (typeof payload === 'string') {
+    try { payload = JSON.parse(payload); }
+    catch { return respond(res, 400, { error: 'Ugyldig JSON.' }); }
+  }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return respond(res, 400, { error: 'Ugyldig forslag.' });
+  const proposal = sanitizeProposal(payload.proposal);
+  if (typeof payload.company === 'string' && payload.company.trim()) return respond(res, 201, { received: true, proposal });
+
   const remoteAddress = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   const clientKey = remoteAddress ? `proposal-limit:${remoteAddress}` : 'proposal-limit:unknown';
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -78,14 +87,6 @@ module.exports = async function handler(req, res) {
     recentSubmissions.set(clientKey, now);
   }
 
-  let payload = req.body;
-  if (typeof payload === 'string') {
-    try { payload = JSON.parse(payload); }
-    catch { return respond(res, 400, { error: 'Ugyldig JSON.' }); }
-  }
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return respond(res, 400, { error: 'Ugyldig forslag.' });
-  const proposal = sanitizeProposal(payload.proposal);
-  if (typeof payload.company === 'string' && payload.company.trim()) return respond(res, 201, { received: true, proposal });
   if (!process.env.GITHUB_PROPOSAL_TOKEN) return respond(res, 503, { error: 'Forslagstjenesten er ikke konfigurert ennå.' });
   if (!Object.keys(proposal.edits).length && !proposal.layout.length && !proposal.note) {
     return respond(res, 400, { error: 'Forslaget inneholder ingen endringer.' });
