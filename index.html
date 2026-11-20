@@ -55,6 +55,8 @@
     .app-scroll::-webkit-scrollbar { display: none; }
     .app-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 23px 20px; }
     .brand { display: flex; gap: 10px; align-items: center; }
+    .brand { cursor: pointer; }
+    .brand:focus-visible { outline: 2px solid var(--oslo-blue); outline-offset: 4px; }
     .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--green); color: var(--lime); }
     .brand-mark svg { width: 21px; height: 21px; }
     .brand-name { font: 800 15px Manrope, sans-serif; letter-spacing: -.04em; }
@@ -287,10 +289,10 @@
           </span>
         </div>
         <header class="app-header">
-          <div class="brand">
+          <a class="brand" href="#popular" id="brandHome" aria-label="UngØstensjø — til Populært å starte med">
             <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.2 12 5l9 8.2"/><path d="M6.5 11.5v7h11v-7M10 18.5v-4h4v4"/><path d="m15 4 2 1.8"/></svg></div>
             <div><div class="brand-name">UngØstensjø</div><div class="brand-sub">Ditt sted i bydelen</div></div>
-          </div>
+          </a>
           <div style="display:flex;gap:7px;align-items:center"><button class="edit-toggle" id="editToggle" aria-pressed="false" aria-label="Slå på redigeringsmodus"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 8.4a2.1 2.1 0 0 0-3-3L5.2 16.2 4 20Z"/></svg><span>Rediger</span></button><button class="header-icon" id="topSaved" aria-label="Vis lagrede tilbud" title="Lagrede tilbud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21z"/></svg></button></div>
         </header>
         <div class="app-scroll" id="appScroll">
@@ -308,7 +310,7 @@
           <div class="section-heading"><h3>Utforsk kategorier</h3><button id="allCategories">Se alle</button></div>
           <div class="category-row" id="categoryRow" aria-label="Filtrer etter kategori"></div>
           <section id="quickSection">
-            <div class="section-heading"><h3>Populært å starte med</h3><button id="allOffers">Se alle</button></div>
+            <div class="section-heading" id="popular"><h3>Populært å starte med</h3><button id="allOffers">Se alle</button></div>
             <div class="quick-grid" id="quickGrid"></div>
           </section>
           <section id="listSection" hidden>
@@ -998,6 +1000,16 @@
     });
     document.querySelectorAll('.nav-button').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
     document.getElementById('topSaved').addEventListener('click', () => setView('saved'));
+    document.getElementById('brandHome').addEventListener('click', event => {
+      event.preventDefault();
+      if (state.view !== 'home') setView('home');
+      else if (state.detailName || state.actionPage) {
+        state.detailName = null;
+        state.actionPage = null;
+        render();
+      }
+      document.getElementById('popular').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     document.getElementById('browseButton').addEventListener('click', () => setView('explore'));
     document.getElementById('allCategories').addEventListener('click', () => setView('explore'));
     document.getElementById('allOffers').addEventListener('click', () => setView('explore'));
