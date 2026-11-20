@@ -79,6 +79,7 @@
     .offer-card.dragging { opacity: .45; }
     .offer-card.drag-target { outline: 2px dashed var(--oslo-blue); outline-offset: 2px; }
     .proposal-submit { background: var(--oslo-blue) !important; color: #fff !important; }
+    .proposal-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
     .import-preview { padding: 12px; border-left: 4px solid var(--oslo-green); background: #F8F0DD; color: #2C2C2C; font-size: 11px; line-height: 1.55; white-space: pre-wrap; }
     .import-preview.error { border-color: var(--oslo-red); }
     .editor-form input[type="file"] { min-height: auto; padding: 7px; }
@@ -323,7 +324,7 @@
         </nav>
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
         <dialog class="editor-dialog" id="offerEditor"><form class="editor-form" id="offerEditorForm"><h2 id="editorTitle">Rediger tilbud</h2><p>Endringene lagres kun i din nettleser. Ingenting publiseres før de sendes inn som forslag.</p><label>Navn<input id="editName" required maxlength="100"></label><label>Kort beskrivelse<textarea id="editSummary" maxlength="300"></textarea></label><label>Informasjon og målgruppe<textarea id="editDescription" maxlength="1200"></textarea></label><label>Viktig å vite<textarea id="editImportant" maxlength="1200"></textarea></label><label>Åpningstider<textarea id="editHours" maxlength="500"></textarea></label><label>Adresse<textarea id="editAddress" maxlength="300"></textarea></label><label>Kontakt<textarea id="editContact" maxlength="500"></textarea></label><div class="editor-buttons"><button type="button" id="cancelEdit">Avbryt</button><button type="submit">Lagre utkast</button></div></form></dialog>
-        <dialog class="editor-dialog" id="proposalDialog"><form class="editor-form" id="proposalForm"><h2>Send inn forslag</h2><p>Forslaget sendes til UngØstensjø for gjennomgang. Det publiseres ikke automatisk. Ikke ta med sensitiv informasjon.</p><label>Navn (valgfritt)<input id="proposalName" maxlength="80" autocomplete="name"></label><label>Hva bør endres?<textarea id="proposalNote" maxlength="1000" placeholder="Beskriv kort hvorfor dette oppsettet er nyttig"></textarea></label><div class="editor-buttons"><button type="button" id="cancelProposal">Avbryt</button><button type="submit" class="proposal-submit">Send forslag</button></div></form></dialog>
+        <dialog class="editor-dialog" id="proposalDialog"><form class="editor-form" id="proposalForm"><h2>Send inn forslag</h2><p>Du trenger ikke GitHub-konto eller navn. Forslaget lagres som en offentlig sak for gjennomgang. Ikke skriv personopplysninger eller noe sensitivt.</p><label>Kommentar (valgfritt)<textarea id="proposalNote" maxlength="1000" placeholder="Hva bør vi vite om dette oppsettet?"></textarea></label><label class="proposal-honeypot" aria-hidden="true">La dette feltet stå tomt<input id="proposalCompany" tabindex="-1" autocomplete="off"></label><div id="proposalSubmitStatus" class="import-preview" hidden aria-live="polite"></div><div class="editor-buttons"><button type="button" id="cancelProposal">Avbryt</button><button type="submit" class="proposal-submit">Send anonymt forslag</button></div></form></dialog>
         <dialog class="editor-dialog" id="importDialog"><form class="editor-form" id="importForm"><h2>Importer endringsforslag</h2><p>Lim inn lenken til en offentlig GitHub Issue. Du får forhåndsvise endringene før de legges i et lokalt utkast i denne nettleseren.</p><label>GitHub Issue-lenke<input id="importIssueUrl" type="url" inputmode="url" required placeholder="https://github.com/bruker/repo/issues/123"></label><div id="importPreview" class="import-preview" hidden aria-live="polite"></div><div class="editor-buttons"><button type="button" id="cancelImport">Avbryt</button><button type="button" id="previewImport">Forhåndsvis</button><button type="submit" class="proposal-submit">Bruk som lokalt utkast</button></div></form></dialog>
       </div>
     </section>
@@ -854,6 +855,15 @@
 
     document.getElementById('importProposalButton').addEventListener('click', () => {
       pendingImport = null;
+      document.getElementById('importDialog').querySelector('h2').textContent = 'Importer endringsforslag';
+      document.getElementById('importDialog').querySelector('.editor-form p').textContent = 'Lim inn lenken til en offentlig GitHub Issue. Du får forhåndsvise endringene før de legges i et lokalt utkast i denne nettleseren.';
+        document.getElementById('importDialog').querySelector('[type="button"]#previewImport').hidden = false;
+        document.getElementById('importIssueUrl').parentElement.hidden = false;
+        document.getElementById('importIssueUrl').required = true;
+
+      const thankYou = document.getElementById('importThankYou');
+      if (thankYou) thankYou.remove();
+      document.getElementById('importDialog').querySelector('[type="submit"]').textContent = 'Bruk som lokalt utkast';
       document.getElementById('importPreview').hidden = true;
       document.getElementById('importPreview').classList.remove('error');
       document.getElementById('importIssueUrl').value = '';
@@ -884,28 +894,72 @@
       listSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       showToast('Forslaget er importert som lokalt utkast');
     });
-    document.getElementById('submitProposal').addEventListener('click', () => document.getElementById('proposalDialog').showModal());
+    document.getElementById('submitProposal').addEventListener('click', () => {
+      const status = document.getElementById('proposalSubmitStatus');
+      status.hidden = true;
+      status.classList.remove('error');
+      status.textContent = '';
+      document.getElementById('proposalDialog').showModal();
+    });
     document.getElementById('cancelProposal').addEventListener('click', () => document.getElementById('proposalDialog').close());
-    document.getElementById('proposalForm').addEventListener('submit', event => {
+    document.getElementById('proposalForm').addEventListener('submit', async event => {
       event.preventDefault();
+      const button = event.currentTarget.querySelector('[type="submit"]');
+      const status = document.getElementById('proposalSubmitStatus');
+      if (document.getElementById('proposalCompany').value.trim()) return;
       const proposal = {
-        title: `Forslag til UngØstensjø-oppsett fra ${document.getElementById('proposalName').value.trim() || 'besøkende'}`,
-        name: document.getElementById('proposalName').value.trim(),
-        note: document.getElementById('proposalNote').value.trim(),
-        layout: state.order,
+        layout: state.order.length ? orderedOffers().map(offer => offer.name) : [],
         edits: state.changes,
-        createdAt: new Date().toISOString()
+        note: document.getElementById('proposalNote').value.trim()
       };
-      if (!proposal.note && !Object.keys(proposal.edits).length && !proposal.layout.length) {
-        showToast('Gjør en endring eller skriv en kommentar først');
+      if (!Object.keys(proposal.edits).length && !state.order.length && !proposal.note) {
+        status.hidden = false;
+        status.classList.add('error');
+        status.textContent = 'Gjør en endring, flytt på et tilbud eller skriv en kommentar først.';
         return;
       }
-      const body = [proposal.note || 'Se vedlagt forslag til oppsett.', `Navn: ${proposal.name || 'Ikke oppgitt'}`, '', 'Oppsett og endringer:', '```json', JSON.stringify({ layout: proposal.layout, edits: proposal.edits }, null, 2), '```', '', `Sendt fra UngØstensjø: ${location.href.split('#')[0]}`].join('\n');
-      const issueURL = `https://github.com/walimsalim/UngOstensjo/issues/new?title=${encodeURIComponent(proposal.title)}&body=${encodeURIComponent(body)}`;
-      const proposalWindow = window.open(issueURL, '_blank', 'noopener,noreferrer');
-      document.getElementById('proposalDialog').close();
-      if (proposalWindow) showToast('Forslaget åpnes i GitHub. Logg inn og trykk Submit new issue for å sende det.');
-      else showToast('Tillat popup-vinduer for GitHub for å sende forslaget.');
+      button.disabled = true;
+      button.textContent = 'Sender …';
+      status.hidden = true;
+      try {
+        const response = await fetch('/api/proposals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proposal, company: document.getElementById('proposalCompany').value.trim() })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Forslaget kunne ikke sendes.');
+        pendingImport = parseImportPayload(result.proposal);
+        document.getElementById('proposalDialog').close();
+        document.getElementById('proposalNote').value = '';
+        document.getElementById('importPreview').hidden = true;
+        document.getElementById('importPreview').classList.remove('error');
+        document.getElementById('importIssueUrl').value = '';
+        showImportPreview(pendingImport);
+        document.getElementById('importDialog').querySelector('[type="button"]#previewImport').hidden = true;
+        document.getElementById('importIssueUrl').parentElement.hidden = true;
+        document.getElementById('importIssueUrl').required = false;
+        document.getElementById('importDialog').showModal();
+        document.getElementById('importDialog').querySelector('h2').textContent = 'Forslag mottatt';
+        let message = document.getElementById('importThankYou');
+        if (!message) {
+          message = document.createElement('p');
+          message.id = 'importThankYou';
+          document.getElementById('importDialog').querySelector('.editor-form').insertBefore(message, document.getElementById('importPreview'));
+        }
+        message.textContent = result.issueUrl ? `Forslaget er sendt til gjennomgang. Åpne kvitteringen: ${result.issueUrl}` : 'Takk! Forslaget er sendt inn til gjennomgang.';
+        document.getElementById('importDialog').querySelector('h2').textContent = 'Forslag mottatt';
+        document.getElementById('importDialog').querySelector('.editor-form p').textContent = 'Forslaget er sendt inn til gjennomgang og publiseres ikke automatisk.';
+        document.getElementById('importDialog').querySelector('[type="submit"]').textContent = 'Bruk som lokalt utkast';
+        showToast('Forslaget er sendt inn for gjennomgang');
+      } catch (error) {
+        status.hidden = false;
+        status.classList.add('error');
+        status.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Send anonymt forslag';
+      }
     });
     document.getElementById('resetContent').addEventListener('click', () => {
       if (!window.confirm('Fjerne alle lokalt lagrede endringer og rekkefølge i denne nettleseren?')) return;
